@@ -1,0 +1,19 @@
+.save-marker-popup {
+  position: absolute;
+  bottom: 5%;
+  left: calc(50% - 200px);
+  width: 400px;
+  height: 50px;
+  border-radius: 10px;
+  background-color: #0088ff;
+  color: white;
+  justify-content: center;
+  align-items: center;
+  justify-self: center;
+  align-self: center;
+  display: flex;
+}
+
+.save-marker-popup:hover {
+    background-color: #4babff;
+}

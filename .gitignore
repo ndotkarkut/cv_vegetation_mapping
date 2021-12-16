@@ -1,0 +1,9 @@
+node_modules
+server/data
+client/src/assets/figures
+client/src/assets/svg
+
+__pycache__
+
+.env
+.env*
