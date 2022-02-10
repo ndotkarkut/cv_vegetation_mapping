@@ -13,6 +13,7 @@ import {
   useLoadScript,
 } from "@react-google-maps/api";
 import RangeSlider from "./components/RangeSlider";
+import { API_URL } from "./constants/config";
 
 const mapContainerStyle = {
   width: "100vw",
@@ -150,8 +151,10 @@ const App = () => {
         "pano_changed",
         function () {
           // console.log(panorama.getPhotographerPov());
-          // console.log(panorama.getPano());
-          if (initialized) {
+          console.log(panorama.getPano(), !!panorama.getPano());
+          if (!panorama.getPano()) return;
+
+          if (initialized && !!panorama.getPano) {
             setPanoVisible(true);
           } else {
             setInitialized(true);
@@ -182,11 +185,18 @@ const App = () => {
         panorama,
         "position_changed",
         function (e) {
-          console.log("position", panorama);
+          setPov(panorama.pov);
           setLinks(panorama.links);
+          console.log("position", panorama);
+
+          // const panoIntensityImageIdx = markers.findIndex(({ id }) => id === panorama?.pano);
+          // console.log(panoIntensityImageIdx);
+          // if (panoIntensityImageIdx !== -1) {
+          //   panoRef.setPano(markers[panoIntensityImageIdx].id);
+          // }
+
           setPanoLat(panorama.location.latLng.lat());
           setPanoLng(panorama.location.latLng.lng());
-          setPov(panorama.pov);
         }
       );
 
@@ -199,17 +209,17 @@ const App = () => {
     fetchData();
   }, [mapRef.current, window.google, markerRef.current, markers]);
 
-  const showFigureHandler = (idx) => {
+  const showFigureHandler = async (idx) => {
     // import panoFigure from `./assets/figures/${panoId}.png`;
     // const panoFigure = require(`./assets/figures/${panoId}.png`).default;
     // setFigureToShow(panoFigure);
+    await panoRef.setPano(markers[idx].id);
     setPanoVisible(true);
     setPanoLat(markers[idx].position.lat);
     setPanoLng(markers[idx].position.lng);
-    panoRef.setPano(markers[idx].id);
     setFigureToShow(markers[idx].figures);
     setShowFigure(true);
-    console.log(markers[idx].id);
+    console.log('showFigureHandler', markers[idx].id);
   };
 
   const onMarkerMovedHandler = (panoId, lat, lng) => {
@@ -230,7 +240,7 @@ const App = () => {
     setUploading(true);
     const response = await Promise.all(
       newMarkerPositions.map(async (marker, idx) => {
-        return await axios.put(`http://localhost:4444/${marker.panoId}`, {
+        return await axios.put(`${API_URL}/${marker.panoId}`, {
           location: marker.location,
         });
       })
@@ -261,7 +271,7 @@ const App = () => {
     const {
       data: { message, svg, figures, intensity },
     } = await axios.get(
-      `http://localhost:8888/${panoRef.getPano()}?lat=${panoLat}&lng=${panoLng}&heading=${panoHeading}&zoom=${zoom}`
+      `${API_URL}/${panoRef.getPano()}?lat=${panoLat}&lng=${panoLng}&heading=${panoHeading}&zoom=${zoom}`
     );
 
     // console.log(message);
@@ -275,7 +285,7 @@ const App = () => {
       },
       svg,
       figures,
-      intensity: `http://localhost:8888/${panoId}_intensity_img.png`,
+      intensity: `${API_URL}/${panoId}_intensity_img.png`,
     };
     console.log(markerToAdd);
 
@@ -388,8 +398,8 @@ const App = () => {
             {uploading
               ? "UPLOADING..."
               : uploaded
-              ? "UPLOADED!"
-              : "SAVE NEW MARKER POSITIONS"}
+                ? "UPLOADED!"
+                : "SAVE NEW MARKER POSITIONS"}
           </p>
         </div>
       )}
