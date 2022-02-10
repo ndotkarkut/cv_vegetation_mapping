@@ -15,7 +15,7 @@ const RangeSlider = (props) => {
       style={{
         position: "absolute",
         bottom: 0,
-        right: 0,
+        left: 0,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -26,6 +26,8 @@ const RangeSlider = (props) => {
         border: "1px solid black",
         borderRadius: "15px",
         margin: "10px",
+        overflow: 'hidden',
+        zIndex: 1999
       }}
     >
       <div class="range-slider" style={{ width: "400px" }}>

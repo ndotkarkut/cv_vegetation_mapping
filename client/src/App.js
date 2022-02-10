@@ -7,7 +7,11 @@ import "./App.css";
 // for axios
 // https://maps.googleapis.com/maps/api/streetview/metadata?size=600x300&pano=JOQ5ZqMNZLACIxUpaSP43w&heading=-45&pitch=42&fov=110&key=AIzaSyD-ikgPFc5SxFFSrLf1N3UB7RFhgrwy-SU
 
-import { GoogleMap, useLoadScript } from "@react-google-maps/api";
+import {
+  GoogleMap,
+  StreetViewPanorama,
+  useLoadScript,
+} from "@react-google-maps/api";
 import RangeSlider from "./components/RangeSlider";
 
 const mapContainerStyle = {
@@ -21,7 +25,7 @@ const center = {
 };
 
 const options = {
-  disableDefaultUI: true,
+  disableDefaultUI: false,
 };
 
 const App = () => {
@@ -33,6 +37,7 @@ const App = () => {
   const [panoInfo, setPanoInfo] = useState([]);
   const [panoRef, setPanoRef] = useState();
   const [newMarkerPositions, setNewMarkerPositions] = useState([]);
+  const [initialized, setInitialized] = useState(false);
   const [panoVisible, setPanoVisible] = useState(false);
 
   const [panoLat, setPanoLat] = useState(0);
@@ -47,8 +52,11 @@ const App = () => {
   const markerRef = useRef();
 
   const [figureToShow, setFigureToShow] = useState();
+  const [showFigure, setShowFigure] = useState(false);
   const [showSaveMarkerPositionPopup, setShowSaveMarkerPositionPopup] =
     useState(false);
+  const [links, setLinks] = useState([]);
+  const [pov, setPov] = useState([]);
 
   useEffect(() => {
     if (uploaded) {
@@ -57,31 +65,6 @@ const App = () => {
       }, 3000);
     }
   }, [uploaded]);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     const {
-  //       data: { panoramas },
-  //     } = await axios.get("http://localhost:4444/allPanos");
-
-  //     const newPanoInfo = await Promise.all(
-  //       panoramas.map(async (pano) => {
-  //         const {
-  //           data: { location },
-  //         } = await axios.get(`http://localhost:4444/${pano}`);
-
-  //         return {
-  //           id: pano,
-  //           location,
-  //         };
-  //       })
-  //     );
-
-  //     setPanoInfo((prevState) => [...newPanoInfo]);
-  //   };
-
-  //   fetchData();
-  // }, []);
 
   const getTileUrl = (pano) => {
     console.log(pano);
@@ -99,7 +82,8 @@ const App = () => {
   }, [markers]);
 
   const getCustomPanorama = (pano, markers) => {
-    console.log(pano);
+    setPanoVisible(true);
+    console.log(panoRef.getLinks());
     console.log(markers);
     const curPano = markers.filter((marker) => pano === marker.id);
     console.log(curPano);
@@ -112,8 +96,9 @@ const App = () => {
         location: {
           pano: curPano[0].id,
           description: "Custom Intensity Pano Image",
+          pov: pov,
         },
-        links: [],
+        links: links,
         // The text for the copyright control.
         copyright: "Imagery (c) 2010 Google",
         // The definition of the tiles for this panorama.
@@ -138,8 +123,14 @@ const App = () => {
       }
 
       const panorama = await new window.google.maps.StreetViewPanorama(
+        // document.getElementById("street-view")
         document.getElementById("marker-1"),
-        { visible: true }
+        {
+          visible: true,
+          linksControl: true,
+          panControl: true,
+          enableCloseButton: true,
+        }
       );
 
       if (panoId) {
@@ -160,9 +151,42 @@ const App = () => {
         function () {
           // console.log(panorama.getPhotographerPov());
           // console.log(panorama.getPano());
+          if (initialized) {
+            setPanoVisible(true);
+          } else {
+            setInitialized(true);
+          }
           setPanoId(panorama.getPano());
           setPanoHeading(panorama.getPhotographerPov().heading);
           setHeadingWasChanged(true);
+          setShowFigure(false);
+        }
+      );
+      window.google.maps.event.addListener(
+        panorama,
+        "visible_changed",
+        function () {
+          console.log("visiblity now: ", !panoVisible);
+          setPanoVisible(false);
+          setShowFigure(false);
+        }
+      );
+      window.google.maps.event.addListener(
+        panorama,
+        "links_changed",
+        function (e) {
+          console.log(e);
+        }
+      );
+      window.google.maps.event.addListener(
+        panorama,
+        "position_changed",
+        function (e) {
+          console.log("position", panorama);
+          setLinks(panorama.links);
+          setPanoLat(panorama.location.latLng.lat());
+          setPanoLng(panorama.location.latLng.lng());
+          setPov(panorama.pov);
         }
       );
 
@@ -173,14 +197,18 @@ const App = () => {
     };
 
     fetchData();
-  }, [mapRef.current, window.google, markerRef.current, panoVisible, markers]);
+  }, [mapRef.current, window.google, markerRef.current, markers]);
 
   const showFigureHandler = (idx) => {
     // import panoFigure from `./assets/figures/${panoId}.png`;
     // const panoFigure = require(`./assets/figures/${panoId}.png`).default;
     // setFigureToShow(panoFigure);
+    setPanoVisible(true);
+    setPanoLat(markers[idx].position.lat);
+    setPanoLng(markers[idx].position.lng);
     panoRef.setPano(markers[idx].id);
     setFigureToShow(markers[idx].figures);
+    setShowFigure(true);
     console.log(markers[idx].id);
   };
 
@@ -217,11 +245,11 @@ const App = () => {
     // window.google.maps.event.trigger(panorama, "pano_changed");
     // console.log(panoRef);
     setFigureToShow();
-    panoRef.setPosition({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+    panoRef.setPosition({ lat: e.latLng?.lat(), lng: e.latLng?.lng() });
     panoRef.setPov(panoRef.getPhotographerPov());
     // console.log(e.latLng.lat(), e.latLng.lng());
-    setPanoLat(e.latLng.lat());
-    setPanoLng(e.latLng.lng());
+    setPanoLat(e.latLng?.lat());
+    setPanoLng(e.latLng?.lng());
     setShowPromptMarker(true);
   };
 
@@ -267,9 +295,10 @@ const App = () => {
 
   // console.log(panoId, panoLat, panoLng, panoHeading);
 
-  console.log(markers);
+  console.log(panoVisible);
+  console.log("markers", markers);
   return (
-    <div>
+    <div style={{ maxWidth: "100vw", overflow: "hidden" }}>
       <GoogleMap
         ref={mapRef}
         mapContainerStyle={mapContainerStyle}
@@ -278,6 +307,7 @@ const App = () => {
         options={options}
         onRightClick={rightClickHandler}
         onClick={() => showPromptMarker && setShowPromptMarker(false)}
+        streetView={panoRef}
       >
         {markers.map((pano, idx) => (
           <MapMarker
@@ -300,14 +330,16 @@ const App = () => {
         id={`marker-1`}
         style={{
           position: "absolute",
-          width: "48vw",
-          height: "40vh",
+          // width: "0vw",
+          // height: "0vh",
+          width: "100vw",
+          height: "100vh",
           bottom: "0px",
           left: "0px",
-          zIndex: 1000,
+          zIndex: panoVisible ? 1000 : -1,
         }}
       ></div>
-      {figureToShow && (
+      {showFigure && figureToShow && (
         <div
           style={{
             position: "absolute",
@@ -361,7 +393,37 @@ const App = () => {
           </p>
         </div>
       )}
-      <RangeSlider setCurrentValue={(val) => setZoom(val)} />
+      {panoVisible && figureToShow && (
+        <div
+          className="save-marker-popup"
+          style={{
+            cursor: uploaded ? "not-allowed" : "pointer",
+            bottom: 175,
+            left: 0,
+            margin: "10px",
+            zIndex: 1999,
+          }}
+          onClick={() => setShowFigure(!showFigure)}
+        >
+          <p>TOGGLE GREENERY DETAILS</p>
+        </div>
+      )}
+      {panoVisible && (
+        <div
+          className="save-marker-popup"
+          style={{
+            cursor: uploaded ? "not-allowed" : "pointer",
+            bottom: 100,
+            left: 0,
+            margin: "10px",
+            zIndex: 1999,
+          }}
+          onClick={onClickHandler}
+        >
+          <p>GET INTENSITY IMAGE OF CURRENT PANORAMA</p>
+        </div>
+      )}
+      {panoVisible && <RangeSlider setCurrentValue={(val) => setZoom(val)} />}
     </div>
   );
 };
