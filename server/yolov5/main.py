@@ -1,24 +1,17 @@
 import torch
 import sys
 
-pano_id = str(sys.argv[1])
+absolutePath = str(sys.argv[1])
+pano_id = str(sys.argv[2])
 
-img = f"C:/Users/groms/Downloads/greenery_mapping/server/data/{pano_id}_pano_img.png"  # or file, Path, PIL, OpenCV, numpy, list
+img = f"{absolutePath}\\data\\{pano_id}_pano_img.png"
 
-#model = torch.hub.load('ultralytics/yolov5', 'yolov5x')  # or yolov5m, yolov5l, yolov5x, custom
-model = torch.hub.load("C:/Users/groms/Downloads/yolov5", "custom", path="C:/Users/groms/Downloads/yolov5/yolov5x.pt", source="local")
-
-# model.conf = 0.25  # NMS confidence threshold
-# model.iou = 0.25  # NMS IoU threshold
-# model.agnostic = False  # NMS class-agnostic
-model.multi_label = False  # NMS multiple labels per box
-
+model = torch.hub.load(f"{absolutePath}\\yolov5", "custom", path=f"{absolutePath}\\yolov5\\yolov5x.pt", source="local")
 
 results = model(img)
 
-
-
 results.show()
-results.save("C:/Users/groms/Downloads/greenery_mapping/server/data/processed") # or .show(), .save(), .crop(), .pandas(), etc.
+results.save(f"{absolutePath}/data/processed")
 
-print(results.pandas().xyxy[0])
+print(results.pandas().xyxy[0].to_json(orient="records"))
+
