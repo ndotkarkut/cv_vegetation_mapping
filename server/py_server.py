@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import subprocess
 from PIL import Image
 import svgwrite 
 import requests
@@ -8,6 +9,8 @@ import streetview
 from skimage import io
 import os 
 import sys
+import torch
+import pandas as pd
 
 # arguments
 pano_latitude = float(sys.argv[1])
@@ -26,6 +29,16 @@ def fig2img(fig):
     img = Image.open(buf)
     return img
 
+def objectDetection (pano_img, pano_id):
+
+    absolutePath=os.getcwd()
+
+    yoloOutput = subprocess.run(f"python {absolutePath}\\yolov5\\main.py {absolutePath} {pano_id} ", shell= True, capture_output = True, text = True)
+    #print(yoloOutput.stdout)
+    print(yoloOutput.stderr)
+
+    print(pd.read_json(yoloOutput.stdout))
+
 if __name__ == '__main__':
 
     panoids = streetview.panoids(lat=pano_latitude, lon=-pano_longitude)
@@ -34,7 +47,12 @@ if __name__ == '__main__':
     panoid = pano_id
     panorama = streetview.download_panorama_v3(panoid, zoom=zoom, disp=True)
     pano_img = Image.fromarray(panorama)
-    pano_img.save('./data/pano_img.png')
+    if ~os.path.isdir(f"./data/{pano_id}"): os.mkdir(f"./data/{pano_id}")
+
+    pano_img.save(f'./data/{pano_id}/pano_img.png')
+
+    objectDetection(pano_img,pano_id)
+  
     # print(panorama)
 
     # plt.imshow(pano_img)
@@ -66,7 +84,7 @@ if __name__ == '__main__':
     img_copy[imask] = [75, 255, 75]
     # and save it
     pano_img = Image.fromarray(img_copy)
-    pano_img.save(f'./data/{pano_id}_intensity_img.png')
+    pano_img.save(f'./data/{pano_id}/pano_img_intensity.png')
 
     x_axis = np.arange(start=0, stop=mask.shape[1], step=1)
     theta_axis = np.linspace(0, 2 * np.pi, mask.shape[1])
@@ -102,10 +120,10 @@ if __name__ == '__main__':
     # print(theta_axis_shifted)
     # print(green_pixels_by_x)
 
-    with open('./data/values_x.txt', 'w') as f:
+    with open(f'./data/{pano_id}/values_x.txt', 'w') as f:
         for el in theta_axis_shifted:
             f.write(str(el) + '\n')
-    with open('./data/values_y.txt', 'w') as f:
+    with open(f'./data/{pano_id}/values_y.txt', 'w') as f:
         for el in green_pixels_by_x:
             f.write(str(el)  + '\n')
 
@@ -116,7 +134,7 @@ if __name__ == '__main__':
     img = fig2img(fig1)
     # img.show()
     # img.save(f'./greenery_mapping/client/src/assets/figures/{img_name}.png')
-    img.save(f'./data/pano_figures.png')
+    img.save(f'./data/{pano_id}/pano_figures.png')
     
     # plt.show()
     # exit

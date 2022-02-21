@@ -269,7 +269,7 @@ const App = () => {
     console.log(panoRef);
 
     const {
-      data: { message, svg, figures, intensity },
+      data: { message, svg, figures, intensity, yolov5pano},
     } = await axios.get(
       `${API_URL}/${panoRef.getPano()}?lat=${panoLat}&lng=${panoLng}&heading=${panoHeading}&zoom=${zoom}`
     );
@@ -277,6 +277,9 @@ const App = () => {
     // console.log(message);
     // console.log(svg);
     // console.log(figures);
+    // console.log("here");
+    // console.log(yolov5pano);
+
     const markerToAdd = {
       id: panoId,
       position: {
@@ -285,7 +288,8 @@ const App = () => {
       },
       svg,
       figures,
-      intensity: `${API_URL}/${panoId}_intensity_img.png`,
+      //intensity: `${API_URL}/${panoId}/pano_img_intensity.png`,
+      intensity: `${API_URL}/${panoId}/processed/pano_img.jpg`,
     };
     console.log(markerToAdd);
 

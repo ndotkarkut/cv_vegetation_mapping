@@ -13,8 +13,8 @@ const makeSvgLine = (theta, r, yMax) => {
 };
 
 module.exports = async (panoId, heading) => {
-  const xValues = await readFile(`./data/values_x.txt`);
-  const yValues = await readFile(`./data/values_y.txt`);
+  const xValues = await readFile(`./data/${panoId}/values_x.txt`);
+  const yValues = await readFile(`./data/${panoId}/values_y.txt`);
 
   //   console.log(xValues);
   const xValArray = xValues.split("\r\n");
@@ -95,5 +95,5 @@ module.exports = async (panoId, heading) => {
   </svg>
   `;
 
-  await writeFile(`./data/${panoId}.svg`, entireSvg);
+  await writeFile(`./data/${panoId}/pano_svg.svg`, entireSvg);
 };

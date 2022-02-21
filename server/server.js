@@ -15,7 +15,8 @@ const PORT = process.env.PORT || 8888;
 // The path to your python script
 var myPythonScript = "py_server.py";
 // Provide the path of the python executable, if python is available as environment variable then you can use only "python"
-var pythonExecutable = "python3.exe";
+//var pythonExecutable = "python3.exe";
+var pythonExecutable = "python";
 
 async function base64_encode(file) {
   return "data:image/png;base64," + (await readFile(file, "base64"));
@@ -72,18 +73,19 @@ app.get("/:panoId", async (req, res, next) => {
     await createSvg(panoId, heading);
     console.log("SVG created. Thank you!");
 
-    const svg = await readFile("./data/pano.svg");
+    //await new Promise(r => setTimeout(r, 2000));
+    const svg = await readFile(`./data/${panoId}/pano_svg.svg`);
     // const svg = await base64_encode("./data/pano.svg");
     // const figures = await readFile("./data/pano_figures.png");
-    const figures_64 = await base64_encode("./data/pano_figures.png");
-    const intensity = await base64_encode("./data/pano_intensity_img.png");
+    const figures_64 = await base64_encode(`./data/${panoId}/pano_figures.png`);
+    const intensity = await base64_encode(`./data/${panoId}/pano_img_intensity.png`);
     // console.log(figures_64);
 
     return res.status(200).json({
       message: "completed",
       svg: svg,
       figures: figures_64,
-      intensity: intensity
+      intensity: intensity,
     });
   });
 });
