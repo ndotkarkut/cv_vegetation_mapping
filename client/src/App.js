@@ -287,6 +287,8 @@ const App = () => {
     // console.log(message);
     // console.log(svg);
     // console.log(figures);
+    // console.log("here");
+
     const markerToAdd = {
       id: panoId,
       position: {
@@ -295,7 +297,8 @@ const App = () => {
       },
       svg,
       figures,
-      intensity: `${API_URL}/${panoId}_intensity_img.png`,
+      //intensity: `${API_URL}/${panoId}/pano_img_intensity.png`,
+      intensity: `${API_URL}/${panoId}/processed/pano_img.jpg`,
       percents,
     };
     console.log(markerToAdd);
