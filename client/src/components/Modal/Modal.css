@@ -1,0 +1,44 @@
+.modal__backdrop {
+  height: 100vh;
+  width: 100vw;
+  position: absolute;
+  /* background-color: #00000000; */
+  z-index: -1;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transition: background-color 300ms ease, z-index 300ms ease 150ms;
+}
+
+.modal__backdrop.active {
+  /* background-color: #00000088; */
+  z-index: 9999;
+}
+
+.modal__modal {
+  height: 500px;
+  width: 500px;
+  top: -50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  position: relative;
+  border: 1px solid white;
+  border-radius: 5px;
+  padding: 10px;
+  transition: top 300ms ease;
+}
+
+.modal__modal.active {
+  top: 50%;
+}
+
+.modal__exit-icon {
+  position: absolute;
+  top: 3%;
+  right: 3%;
+  cursor: pointer;
+  height: 5%;
+  width: 5%;
+}

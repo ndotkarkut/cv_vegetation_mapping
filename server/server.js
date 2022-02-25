@@ -53,7 +53,7 @@ app.get("/:panoId", async (req, res, next) => {
     lng,
     heading,
     panoId,
-    zoom
+    zoom,
   ]);
 
   // Handle normal output
@@ -73,8 +73,13 @@ app.get("/:panoId", async (req, res, next) => {
     await createSvg(panoId, heading);
     console.log("SVG created. Thank you!");
 
-    //await new Promise(r => setTimeout(r, 2000));
     const svg = await readFile(`./data/${panoId}/pano_svg.svg`);
+    const percentages = (await readFile("./data/img_percents.txt")).split(",");
+    const percent_obj = {
+      sky: +percentages[0],
+      green: +percentages[1],
+      street: +percentages[2],
+    };
     // const svg = await base64_encode("./data/pano.svg");
     // const figures = await readFile("./data/pano_figures.png");
     const figures_64 = await base64_encode(`./data/${panoId}/pano_figures.png`);
@@ -86,6 +91,7 @@ app.get("/:panoId", async (req, res, next) => {
       svg: svg,
       figures: figures_64,
       intensity: intensity,
+      percents: percent_obj,
     });
   });
 });
