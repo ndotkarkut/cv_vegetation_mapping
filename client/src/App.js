@@ -14,6 +14,7 @@ import {
 } from "@react-google-maps/api";
 import RangeSlider from "./components/RangeSlider";
 import { API_URL } from "./constants/config";
+import InfoModal from "./components/InfoModal/InfoModal";
 
 const mapContainerStyle = {
   width: "100vw",
@@ -33,6 +34,7 @@ const App = () => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
   });
+  const [showModal, setShowModal] = useState(false);
   const [uploaded, setUploaded] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [panoInfo, setPanoInfo] = useState([]);
@@ -40,6 +42,7 @@ const App = () => {
   const [newMarkerPositions, setNewMarkerPositions] = useState([]);
   const [initialized, setInitialized] = useState(false);
   const [panoVisible, setPanoVisible] = useState(false);
+  const [panoShown, setPanoShown] = useState(false);
 
   const [panoLat, setPanoLat] = useState(0);
   const [panoLng, setPanoLng] = useState(0);
@@ -154,7 +157,7 @@ const App = () => {
           console.log(panorama.getPano(), !!panorama.getPano());
           if (!panorama.getPano()) return;
 
-          if (initialized && !!panorama.getPano) {
+          if (!!panorama.getPano()) {
             setPanoVisible(true);
           } else {
             setInitialized(true);
@@ -162,7 +165,7 @@ const App = () => {
           setPanoId(panorama.getPano());
           setPanoHeading(panorama.getPhotographerPov().heading);
           setHeadingWasChanged(true);
-          setShowFigure(false);
+          // setShowFigure(false);
         }
       );
       window.google.maps.event.addListener(
@@ -171,7 +174,7 @@ const App = () => {
         function () {
           console.log("visiblity now: ", !panoVisible);
           setPanoVisible(false);
-          setShowFigure(false);
+          // setShowFigure(false);
         }
       );
       window.google.maps.event.addListener(
@@ -195,8 +198,13 @@ const App = () => {
           //   panoRef.setPano(markers[panoIntensityImageIdx].id);
           // }
 
-          setPanoLat(panorama.location.latLng.lat());
-          setPanoLng(panorama.location.latLng.lng());
+          if (!!panorama.position) {
+            setPanoLat(panorama.position.lat());
+            setPanoLng(panorama.position.lng());
+          } else if (!!panorama.location.latLng) {
+            setPanoLat(panorama.location.latLng.lat());
+            setPanoLng(panorama.location.latLng.lng());
+          }
         }
       );
 
@@ -218,8 +226,8 @@ const App = () => {
     setPanoLat(markers[idx].position.lat);
     setPanoLng(markers[idx].position.lng);
     setFigureToShow(markers[idx].figures);
-    setShowFigure(true);
-    console.log('showFigureHandler', markers[idx].id);
+    // setShowFigure(true);
+    console.log("showFigureHandler", markers[idx].id);
   };
 
   const onMarkerMovedHandler = (panoId, lat, lng) => {
@@ -264,12 +272,14 @@ const App = () => {
   };
 
   const onClickHandler = async () => {
+    panoRef.setPosition({ lat: panoLat, lng: panoLng });
+    panoRef.setPov(panoRef.getPhotographerPov());
     panoRef.panoProvider.provider = null;
     console.log(panoRef.pov, panoRef.panoProvider.options);
     console.log(panoRef);
 
     const {
-      data: { message, svg, figures, intensity },
+      data: { message, svg, figures, intensity, percents },
     } = await axios.get(
       `${API_URL}/${panoRef.getPano()}?lat=${panoLat}&lng=${panoLng}&heading=${panoHeading}&zoom=${zoom}`
     );
@@ -286,6 +296,7 @@ const App = () => {
       svg,
       figures,
       intensity: `${API_URL}/${panoId}_intensity_img.png`,
+      percents,
     };
     console.log(markerToAdd);
 
@@ -293,6 +304,31 @@ const App = () => {
     setFigureToShow(figures);
     setShowPromptMarker(false);
     panoRef.setPano(panoId);
+  };
+
+  const showPano = async (idx) => {
+    panoRef.setPano(markers[idx].id);
+    panoRef.panoProvider.provider = null;
+    console.log(panoRef.pov, panoRef.panoProvider.options);
+    console.log(panoRef);
+    setMarkers((curMarkers) => [...curMarkers]);
+    console.log(idx);
+    panoRef.setPosition(markers[idx].position);
+    panoRef.setPov(panoRef.getPhotographerPov());
+    panoRef.setPano(markers[idx].id);
+  };
+
+  const newRightClickHandler = async (e) => {
+    console.log("right clicked", e);
+    const curLat = await e.latLng.lat();
+    const curLng = await e.latLng.lng();
+    setPanoLat(curLat);
+    setPanoLng(curLng);
+    setShowPromptMarker(true);
+    console.log("panoHeading", panoHeading);
+    console.log("lat lng", curLat, curLng);
+
+    console.log(panoRef);
   };
 
   // console.log(newMarkerPositions);
@@ -306,6 +342,7 @@ const App = () => {
   // console.log(panoId, panoLat, panoLng, panoHeading);
 
   console.log(panoVisible);
+  console.log("current panoId", panoId);
   console.log("markers", markers);
   return (
     <div style={{ maxWidth: "100vw", overflow: "hidden" }}>
@@ -315,7 +352,8 @@ const App = () => {
         zoom={19}
         center={center}
         options={options}
-        onRightClick={rightClickHandler}
+        // onRightClick={rightClickHandler}
+        onRightClick={newRightClickHandler}
         onClick={() => showPromptMarker && setShowPromptMarker(false)}
         streetView={panoRef}
       >
@@ -325,7 +363,8 @@ const App = () => {
             key={idx}
             position={pano.position}
             panoId={pano.id}
-            onClick={() => showFigureHandler(idx)}
+            // onClick={() => showFigureHandler(idx)}
+            onClick={() => showPano(idx)}
             onMarkerMoved={onMarkerMovedHandler}
           />
         ))}
@@ -398,26 +437,34 @@ const App = () => {
             {uploading
               ? "UPLOADING..."
               : uploaded
-                ? "UPLOADED!"
-                : "SAVE NEW MARKER POSITIONS"}
+              ? "UPLOADED!"
+              : "SAVE NEW MARKER POSITIONS"}
           </p>
         </div>
       )}
-      {panoVisible && figureToShow && (
-        <div
-          className="save-marker-popup"
-          style={{
-            cursor: uploaded ? "not-allowed" : "pointer",
-            bottom: 175,
-            left: 0,
-            margin: "10px",
-            zIndex: 1999,
-          }}
-          onClick={() => setShowFigure(!showFigure)}
-        >
-          <p>TOGGLE GREENERY DETAILS</p>
-        </div>
-      )}
+      {panoVisible &&
+        figureToShow &&
+        markers.filter(({ id }) => panoId === id).length > 0 && (
+          <div
+            className="save-marker-popup"
+            style={{
+              cursor: uploaded ? "not-allowed" : "pointer",
+              bottom: 175,
+              left: 0,
+              margin: "10px",
+              zIndex: 1999,
+            }}
+            onClick={() => {
+              const marker = markers.filter(({ id }) => panoId === id);
+              console.log(marker[0]);
+              setFigureToShow(marker[0].figures);
+              // setShowFigure(!showFigure);
+              setShowModal(true);
+            }}
+          >
+            <p>TOGGLE GREENERY DETAILS</p>
+          </div>
+        )}
       {panoVisible && (
         <div
           className="save-marker-popup"
@@ -434,6 +481,12 @@ const App = () => {
         </div>
       )}
       {panoVisible && <RangeSlider setCurrentValue={(val) => setZoom(val)} />}
+      <InfoModal
+        show={showModal}
+        close={() => setShowModal(false)}
+        figure={figureToShow}
+        percentages={markers.filter(({ id }) => id == panoId)[0]?.percents}
+      />
     </div>
   );
 };
