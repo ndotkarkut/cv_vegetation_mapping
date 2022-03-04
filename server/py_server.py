@@ -49,7 +49,10 @@ if __name__ == '__main__':
     panoid = pano_id
     panorama = streetview.download_panorama_v3(panoid, zoom=zoom, disp=True)
     pano_img = Image.fromarray(panorama)
-    if ~os.path.isdir(f"./data/{pano_id}"): os.mkdir(f"./data/{pano_id}")
+
+    #print(not os.path.isdir(f"./data/{pano_id}"))
+    if not os.path.isdir(f"./data/{pano_id}"): 
+        os.mkdir(f"./data/{pano_id}")
 
     pano_img.save(f'./data/{pano_id}/pano_img.png')
 
