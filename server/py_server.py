@@ -32,8 +32,10 @@ def fig2img(fig):
 def objectDetection (pano_img, pano_id):
 
     absolutePath=os.getcwd()
+    print(absolutePath)
 
-    yoloOutput = subprocess.run(f"python {absolutePath}\\yolov5\\main.py {absolutePath} {pano_id} ", shell= True, capture_output = True, text = True)
+    yoloOutput = subprocess.run(["python", f"{absolutePath}\\yolov5\\main.py", f"{absolutePath}", f"{pano_id}"], shell= True, capture_output = True, text = True)
+    # yoloOutput = subprocess.run(f"python {absolutePath}\\yolov5\\main.py {absolutePath} {pano_id} ", shell= True, capture_output = True, text = True)
     #print(yoloOutput.stdout)
     print(yoloOutput.stderr)
 
