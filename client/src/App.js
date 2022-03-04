@@ -34,6 +34,7 @@ const App = () => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
   });
+  const [fontSize, setFontSize] = useState(2);
   const [showModal, setShowModal] = useState(false);
   const [uploaded, setUploaded] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -296,7 +297,7 @@ const App = () => {
     const {
       data: { message, svg, figures, intensity, percents },
     } = await axios.get(
-      `${API_URL}/${panoRef.getPano()}?lat=${panoLat}&lng=${panoLng}&heading=${panoHeading}&zoom=${zoom}`
+      `${API_URL}/${panoRef.getPano()}?lat=${panoLat}&lng=${panoLng}&heading=${panoHeading}&zoom=${zoom}&fontSize=${fontSize}`
     );
 
     // console.log(message);
@@ -460,69 +461,89 @@ const App = () => {
           </p>
         </div>
       )}
-      {panoVisible &&
-        figureToShow &&
-        markers.filter(({ id }) => panoId === id).length > 0 && (
+      {/* {panoVisible && <Dashboard />} */}
+      {panoVisible && (
+        <div>
+          {figureToShow &&
+            markers.filter(({ id }) => panoId === id).length > 0 && (
+              <div
+                className="save-marker-popup"
+                style={{
+                  cursor: uploaded ? "not-allowed" : "pointer",
+                  bottom: 220,
+                  left: 0,
+                  margin: "10px",
+                  zIndex: 1999,
+                }}
+                onClick={() => {
+                  const marker = markers.filter(({ id }) => panoId === id);
+                  // console.log(marker[0]);
+                  setFigureToShow(marker[0].figures);
+                  // setShowFigure(!showFigure);
+                  setShowModal(true);
+                }}
+              >
+                <p>TOGGLE GREENERY DETAILS</p>
+              </div>
+            )}
           <div
             className="save-marker-popup"
             style={{
               cursor: uploaded ? "not-allowed" : "pointer",
-              bottom: 175,
+              bottom: 160,
               left: 0,
               margin: "10px",
               zIndex: 1999,
             }}
-            onClick={() => {
-              const marker = markers.filter(({ id }) => panoId === id);
-              // console.log(marker[0]);
-              setFigureToShow(marker[0].figures);
-              // setShowFigure(!showFigure);
-              setShowModal(true);
-            }}
+            onClick={onClickHandler}
           >
-            <p>TOGGLE GREENERY DETAILS</p>
+            <p>GET INTENSITY IMAGE OF CURRENT PANORAMA</p>
           </div>
-        )}
-      {panoVisible && (
-        <div
-          className="save-marker-popup"
-          style={{
-            cursor: uploaded ? "not-allowed" : "pointer",
-            bottom: 100,
-            left: 0,
-            margin: "10px",
-            zIndex: 1999,
-          }}
-          onClick={onClickHandler}
-        >
-          <p>GET INTENSITY IMAGE OF CURRENT PANORAMA</p>
+
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              margin: "10px",
+              top: "75px",
+              cursor: "pointer",
+              zIndex: 1999,
+              height: "25px",
+              width: "100px",
+              backgroundColor: "#0088ff",
+              color: "white",
+              justifyContent: "center",
+              alignItems: "center",
+              justifySelf: "center",
+              alignSelf: "center",
+              display: "flex",
+            }}
+            onClick={() => setPanoVisible(false)}
+          >
+            <p>CLOSE</p>
+          </div>
+          <RangeSlider
+            setCurrentValue={(val) => setFontSize(val)}
+            initialValue={2}
+            style={{ bottom: 80, left: 0 }}
+            min={1}
+            max={3}
+            minTitle="Small"
+            maxTitle="Large"
+            title="Object Detection Font Size"
+          />
+          <RangeSlider
+            setCurrentValue={(val) => setZoom(val)}
+            initialValue={3}
+            style={{ bottom: 0, left: 0 }}
+            min={1}
+            max={5}
+            minTitle="Lower Quality"
+            maxTitle="Higher Quality"
+            title="Greenery Pano Resolution"
+          />
         </div>
       )}
-      {panoVisible && (
-        <div
-          style={{
-            position: "absolute",
-            left: 0,
-            margin: "10px",
-            top: "75px",
-            cursor: "pointer",
-            zIndex: 1999,
-            height: "25px",
-            width: "100px",
-            backgroundColor: "#0088ff",
-            color: "white",
-            justifyContent: "center",
-            alignItems: "center",
-            justifySelf: "center",
-            alignSelf: "center",
-            display: "flex",
-          }}
-          onClick={() => setPanoVisible(false)}
-        >
-          <p>CLOSE</p>
-        </div>
-      )}
-      {panoVisible && <RangeSlider setCurrentValue={(val) => setZoom(val)} />}
       <InfoModal
         show={showModal}
         close={() => setShowModal(false)}

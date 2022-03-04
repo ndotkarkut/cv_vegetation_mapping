@@ -41,12 +41,17 @@ app.listen(PORT, () => {
 app.get("/:panoId", async (req, res, next) => {
   try {
     const panoId = req.params.panoId;
-    const { lat, lng, heading, zoom } = req.query;
-    console.log(lat, lng, heading, zoom);
+    const { lat, lng, heading, zoom, fontSize } = req.query;
+    console.log(lat, lng, heading, zoom, fontSize);
 
     if (!lat || !lng || !heading) {
       return res.status(400).json({ message: "Invalid Request" });
     }
+
+    await writeFile(
+      "./yolov5/config.json",
+      JSON.stringify({ font_size: fontSize })
+    );
 
     const scriptExecution = spawn(pythonExecutable, [
       myPythonScript,
