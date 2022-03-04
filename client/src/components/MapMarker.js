@@ -66,7 +66,7 @@ const MapMarker = (props) => {
       draggable={true}
       onDragEnd={onDragEndHandler}
       icon={{
-        url: `http://localhost:8888/${panoId}.svg`,
+        url: `http://localhost:8888/${panoId}/pano_svg.svg`,
         scaledSize: new window.google.maps.Size(100, 100),
         origin: new window.google.maps.Point(0, 0),
         anchor: new window.google.maps.Point(50, 50),
