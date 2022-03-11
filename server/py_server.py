@@ -11,6 +11,8 @@ import os
 import sys
 import torch
 import pandas as pd
+import json
+from timeit import default_timer as timer
 
 # arguments
 pano_latitude = float(sys.argv[1])
@@ -29,17 +31,29 @@ def fig2img(fig):
     img = Image.open(buf)
     return img
 
-def objectDetection (pano_img, pano_id):
+def objectDetection (pano_id):
 
     absolutePath=os.getcwd()
+    json_file_path = f"./data/{pano_id}/processed/object_detection.json"
     print(absolutePath)
 
     yoloOutput = subprocess.run(["python", f"{absolutePath}\\yolov5\\main.py", f"{absolutePath}", f"{pano_id}"], shell= True, capture_output = True, text = True)
-    # yoloOutput = subprocess.run(f"python {absolutePath}\\yolov5\\main.py {absolutePath} {pano_id} ", shell= True, capture_output = True, text = True)
-    #print(yoloOutput.stdout)
+    print(yoloOutput.stdout)
     print(yoloOutput.stderr)
 
-    print(pd.read_json(yoloOutput.stdout))
+    df = pd.read_json(yoloOutput.stdout)
+
+    count_json={}
+    if not df.empty:
+        temp = df["name"].value_counts()
+        classes = temp.keys().tolist()
+        counts  = temp.tolist()
+
+        for i in range (len(classes)):
+            count_json[classes[i]] =  counts[i]
+
+    with open(json_file_path, "w") as outfile:
+        json.dump(count_json, outfile)
 
 if __name__ == '__main__':
 
@@ -56,8 +70,9 @@ if __name__ == '__main__':
 
     pano_img.save(f'./data/{pano_id}/pano_img.png')
 
-    objectDetection(pano_img,pano_id)
+    objectDetection(pano_id)
   
+    exit()
     # print(panorama)
 
     # plt.imshow(pano_img)
