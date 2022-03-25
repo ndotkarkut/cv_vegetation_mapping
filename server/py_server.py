@@ -55,6 +55,13 @@ def objectDetection (pano_id):
     with open(json_file_path, "w") as outfile:
         json.dump(count_json, outfile)
 
+def depthDetection(pano_id):
+    print("Started depthDetection")
+    absolutePath=os.getcwd()
+    depthOutput = subprocess.run(["python", f"{absolutePath}\\monodepth2\\main.py", f"{absolutePath}", f"{pano_id}"], shell= True, capture_output = True, text = True)
+    print(depthOutput.stdout)
+    print(depthOutput.stderr)
+
 if __name__ == '__main__':
 
     panoids = streetview.panoids(lat=pano_latitude, lon=-pano_longitude)
@@ -72,8 +79,9 @@ if __name__ == '__main__':
     pano_img.save(f'./data/{pano_id}/pano_img.png')
 
     objectDetection(pano_id)
-  
-    # exit()
+
+    depthDetection(pano_id)
+
     # print(panorama)
 
     # plt.imshow(pano_img)
