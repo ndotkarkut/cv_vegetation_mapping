@@ -80,14 +80,21 @@ app.get("/:panoId", async (req, res, next) => {
       console.log("SVG created. Thank you!");
 
       const svg = await readFile(`./data/${panoId}/pano_svg.svg`);
-      const percentages = (await readFile("./data/img_percents.txt")).split(
-        ","
-      );
+      const percentages = (
+        await readFile(`./data/${panoId}/img_percents.txt`)
+      ).split(",");
       const percent_obj = {
         sky: +percentages[0],
         green: +percentages[1],
         street: +percentages[2],
       };
+      const objectCount = await readFile(
+        `./data/${panoId}/processed/object_detection.json`
+      );
+
+      const objectCountJson = JSON.parse(objectCount);
+
+      console.log("object count", objectCount, objectCountJson);
       // const svg = await base64_encode("./data/pano.svg");
       // const figures = await readFile("./data/pano_figures.png");
       const figures_64 = await base64_encode(
@@ -104,6 +111,7 @@ app.get("/:panoId", async (req, res, next) => {
         figures: figures_64,
         intensity: intensity,
         percents: percent_obj,
+        object_count: objectCountJson,
       });
     });
   } catch (err) {
