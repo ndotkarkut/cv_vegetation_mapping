@@ -10,7 +10,7 @@ pano_id = str(sys.argv[2])
 
 img = f"{absolutePath}\\data\\{pano_id}\\pano_img.png"
 
-model = torch.hub.load(f"{absolutePath}\\yolov5", "custom", path=f"{absolutePath}\\yolov5\\yolov5x.pt", source="local")
+model = torch.hub.load(f"{absolutePath}\\yolov5", "custom", path=f"{absolutePath}\\yolov5\\yolov5x.pt", source="local", force_reload=True)
 
 model.conf = 0.16  # NMS confidence threshold
 model.iou = 0.15  # NMS IoU threshold
