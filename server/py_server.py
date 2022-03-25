@@ -144,7 +144,7 @@ if __name__ == '__main__':
     # img_copy[kmask] = [75, 255, 75]
     img_copy[img_sky_mask] = [165, 203, 246]
     # # make image that highlights the gray in RGB
-    # img_copy[img_str_mask] = [175, 175, 175]
+    img_copy[img_str_mask] = [175, 175, 175]
     # make image that highlights the green in RGB
     img_copy[img_g_mask] = [75, 255, 75]
 
@@ -160,7 +160,15 @@ if __name__ == '__main__':
                 sky_pixels += 1
             elif np.array_equal(np.array([75,255,75]), np.array(img_copy[x][y])):
                 green_pixels += 1
+
+    img_copy_2 = img.copy()
         
+    # img_copy[kmask] = [75, 255, 75]
+    img_copy_2[img_sky_mask] = [165, 203, 246]
+    # # make image that highlights the gray in RGB
+    # img_copy_2[img_str_mask] = [175, 175, 175]
+    # make image that highlights the green in RGB
+    img_copy_2[img_g_mask] = [75, 255, 75]
 
     total_pixels = img_copy.shape[0] * img_copy.shape[1]
     print('total pixels:', total_pixels)
@@ -174,7 +182,7 @@ if __name__ == '__main__':
     print(sky_px_percent + green_px_percent + street_px_percent)
 
     # and save it
-    pano_img = Image.fromarray(img_copy)
+    pano_img = Image.fromarray(img_copy_2)
     pano_img.save(f'./data/{pano_id}/pano_img_intensity.png')
 
     x_axis = np.arange(start=0, stop=greenery_openings.shape[1], step=1)

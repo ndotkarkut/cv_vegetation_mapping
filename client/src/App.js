@@ -295,7 +295,7 @@ const App = () => {
     // console.log(panoRef);
 
     const {
-      data: { message, svg, figures, intensity, percents },
+      data: { message, svg, figures, intensity, percents, object_count },
     } = await axios.get(
       `${API_URL}/${panoRef.getPano()}?lat=${panoLat}&lng=${panoLng}&heading=${panoHeading}&zoom=${zoom}&fontSize=${fontSize}`
     );
@@ -316,6 +316,7 @@ const App = () => {
       intensity: `${API_URL}/${panoId}/pano_img_intensity.png`,
       processing: `${API_URL}/${panoId}/processed/pano_img.jpg`,
       percents,
+      objectCount: object_count,
     };
     // console.log(markerToAdd);
 
@@ -551,6 +552,7 @@ const App = () => {
         percentages={markers.filter(({ id }) => id == panoId)[0]?.percents}
         intensityImage={markers.filter(({ id }) => id == panoId)[0]?.intensity}
         objectImage={markers.filter(({ id }) => id == panoId)[0]?.processing}
+        objectCount={markers.filter(({ id }) => id == panoId)[0]?.objectCount}
       />
     </div>
   );

@@ -75,7 +75,7 @@ const PlotDetailsTab = ({ percentages, figure, objectCount }) => {
             </p>
           </div>
         )}
-        {green && (
+        {street && (
           <div
             style={{
               width: "100%",
@@ -95,7 +95,7 @@ const PlotDetailsTab = ({ percentages, figure, objectCount }) => {
             </p>
           </div>
         )}
-        {street && (
+        {green && (
           <div
             style={{
               width: "100%",
