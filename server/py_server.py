@@ -12,6 +12,7 @@ import sys
 import torch
 import pandas as pd
 import json
+import math
 from timeit import default_timer as timer
 
 # arguments
@@ -21,6 +22,42 @@ pano_heading = float(sys.argv[3])
 pano_id = sys.argv[4]
 zoom = int(sys.argv[5])
 print(pano_heading, pano_latitude, pano_longitude, pano_id, zoom)
+
+def get_depth_per_point(pano_id, pano_width):
+    data = np.load(f'./data/{pano_id}/pano_img_depth.npy')
+    data = data[0][0]
+    print(data.shape)
+
+    pano_x_dim = pano_width
+
+    depth_per_x = []
+
+    for i in range(int(data.shape[1])):
+        all_depths_added = 0
+        for j in range(int(data.shape[0] / 2)):
+            all_depths_added += data[j][i]
+
+        avg_distance_away = all_depths_added / int(data.shape[0] / 2)
+        depth_per_x.append(avg_distance_away)
+
+    print(len(depth_per_x), max(depth_per_x) + 5)
+
+    pano_adjusted_depth_arr = np.zeros(pano_x_dim)
+
+    past_x = 0
+    for depth_x_loc in range(len(depth_per_x)):
+        x_pix_loc = math.floor(pano_x_dim / data.shape[1] * depth_x_loc)
+        pano_adjusted_depth_arr[x_pix_loc] = depth_per_x[depth_x_loc]
+        for i in range(past_x + 1, x_pix_loc):
+            pano_adjusted_depth_arr[i] = depth_per_x[depth_x_loc]
+        past_x = x_pix_loc
+    pano_adjusted_depth_arr[-1] = depth_per_x[-1]
+
+    with open(f'./data/{pano_id}/depth_data.txt', 'w') as f:
+        for i in pano_adjusted_depth_arr:
+            f.write(f'{i}\n')
+
+    return
 
 def fig2img(fig):
     """Convert a Matplotlib figure to a PIL Image and return it"""
@@ -81,6 +118,8 @@ if __name__ == '__main__':
     objectDetection(pano_id)
 
     depthDetection(pano_id)
+
+    get_depth_per_point(pano_id, pano_width=panorama.shape[1])
 
     # print(panorama)
 

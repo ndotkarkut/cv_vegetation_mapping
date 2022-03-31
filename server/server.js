@@ -1,4 +1,5 @@
 const createSvg = require("./createSvg");
+const createDepthSvg = require("./createDepthSvg");
 const { readFile, writeFile } = require("./util/fsPromises");
 
 const axios = require("axios");
@@ -78,8 +79,11 @@ app.get("/:panoId", async (req, res, next) => {
       console.log("Process quit with code : " + code);
       await createSvg(panoId, heading);
       console.log("SVG created. Thank you!");
+      await createDepthSvg(panoId, heading);
+      console.log("Depth SVG created. Thank you!");
 
       const svg = await readFile(`./data/${panoId}/pano_svg.svg`);
+      const depthSvg = await readFile(`./data/${panoId}/depth_svg.svg`);
       const percentages = (
         await readFile(`./data/${panoId}/img_percents.txt`)
       ).split(",");
@@ -108,6 +112,7 @@ app.get("/:panoId", async (req, res, next) => {
       return res.status(200).json({
         message: "completed",
         svg: svg,
+        depthSvg,
         figures: figures_64,
         intensity: intensity,
         percents: percent_obj,
