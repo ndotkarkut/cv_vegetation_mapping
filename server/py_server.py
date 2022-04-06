@@ -23,22 +23,6 @@ pano_id = sys.argv[4]
 zoom = int(sys.argv[5])
 print(pano_heading, pano_latitude, pano_longitude, pano_id, zoom)
 
-def get_depth_per_point(pano_id, pano_width):
-    depthMatrix = np.load(f"./data/{pano_id}/pano_img_depth.npy")[0][0]
-    rows = depthMatrix.shape[0]
-    columns = depthMatrix.shape[1]
-
-    depthMatrix = depthMatrix[:, int(0.2*rows):int(0.7*rows)]
-
-    depthArray=np.average(depthMatrix, axis = 0)
-
-    depthArrayImage=np.zeros(pano_width)
-
-    for i in range(pano_width): 
-        depthArrayImage[i] = depthArray[int(columns/pano_width * i)-1]
-
-    np.savetxt(f"./data/{pano_id}/depth_data.txt", depthArrayImage, fmt='%f')
-
 def fig2img(fig):
     """Convert a Matplotlib figure to a PIL Image and return it"""
     import io
@@ -82,8 +66,6 @@ if __name__ == '__main__':
     depthDetection(pano_id)
 
     objectDetection(pano_id, pano_latitude, pano_longitude, pano_heading)
-
-    #get_depth_per_point(pano_id, pano_width=panorama.shape[1])
 
     # print(panorama)
 

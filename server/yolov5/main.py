@@ -19,10 +19,10 @@ import json
 from math import sin, cos, asin, acos, atan2, radians, degrees
 
 def inxY(pixel_index, pano_width):
-    return int(320/pano_width * pixel_index) - 1
+    return int(320/pano_width * pixel_index)
 
 def inxX(pixel_index, pano_height):
-    return int(1024/pano_height * pixel_index) - 1
+    return int(1024/pano_height * pixel_index)
 
 def getHeading(pano_heading, pano_x_mid, x_mid, heading_per_pixel):
     heading = heading_per_pixel * x_mid

@@ -30,6 +30,6 @@ depthArray=np.average(depthMatrix, axis = 0)
 depthArrayImage=np.zeros(pano_x)
 
 for i in range(pano_x): 
-    depthArrayImage[i] = depthArray[int(x/pano_x * i)-1]
+    depthArrayImage[i] = depthArray[int(x/pano_x * i)]
 
 np.savetxt(f"{absolutePath}/data/{pano_id}/depth_data.txt", depthArrayImage, fmt='%f')
