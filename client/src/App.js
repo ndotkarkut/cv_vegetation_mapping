@@ -15,6 +15,7 @@ import {
 import RangeSlider from "./components/RangeSlider";
 import { API_URL } from "./constants/config";
 import InfoModal from "./components/InfoModal/InfoModal";
+import PanoCompass from "./components/PanoCompass/PanoCompass";
 
 const mapContainerStyle = {
   width: "100vw",
@@ -44,6 +45,7 @@ const App = () => {
   const [initialized, setInitialized] = useState(false);
   const [panoVisible, setPanoVisible] = useState(false);
   const [panoShown, setPanoShown] = useState(false);
+  const [userHeading, setUserHeading] = useState(0);
 
   const [panoLat, setPanoLat] = useState(0);
   const [panoLng, setPanoLng] = useState(0);
@@ -223,6 +225,10 @@ const App = () => {
           }
         }
       );
+      window.google.maps.event.addListener(panorama, "pov_changed", () => {
+        console.log("heading in event listener", panorama.getPov().heading);
+        setUserHeading(panorama.getPov().heading);
+      });
 
       setTimeout(() => {
         // window.google.maps.event.trigger(panorama, "pano_changed");
@@ -295,7 +301,15 @@ const App = () => {
     // console.log(panoRef);
 
     const {
-      data: { message, svg, figures, intensity, percents, object_count },
+      data: {
+        message,
+        svg,
+        figures,
+        intensity,
+        percents,
+        object_count,
+        heading,
+      },
     } = await axios.get(
       `${API_URL}/${panoRef.getPano()}?lat=${panoLat}&lng=${panoLng}&heading=${panoHeading}&zoom=${zoom}&fontSize=${fontSize}`
     );
@@ -317,6 +331,7 @@ const App = () => {
       processing: `${API_URL}/${panoId}/processed/pano_img.jpg`,
       percents,
       objectCount: object_count,
+      heading: heading,
     };
     // console.log(markerToAdd);
 
@@ -344,9 +359,9 @@ const App = () => {
     const curLng = await e.latLng.lng();
     setPanoLat(curLat);
     setPanoLng(curLng);
-    setShowPromptMarker(true);
+    // setShowPromptMarker(true);
     // console.log("panoHeading", panoHeading);
-    // console.log("lat lng", curLat, curLng);
+    console.log("lat lng", curLat, curLng);
 
     // console.log(panoRef);
   };
@@ -360,10 +375,14 @@ const App = () => {
   }
 
   // console.log(panoId, panoLat, panoLng, panoHeading);
-
+  console.log("rendere", userHeading);
+  console.log(
+    markers.filter(({ id }) => panoId === id).length > 0 &&
+      markers.filter(({ id }) => panoId === id)
+  );
   // console.log(panoVisible);
   // console.log("current panoId", panoId);
-  // console.log("markers", markers);
+  console.log("markers", markers);
   return (
     <div style={{ maxWidth: "100vw", overflow: "hidden" }}>
       <GoogleMap
@@ -465,6 +484,13 @@ const App = () => {
       {/* {panoVisible && <Dashboard />} */}
       {panoVisible && (
         <div>
+          {markers.filter(({ id }) => panoId === id).length > 0 && (
+            <PanoCompass
+              panoId={panoId}
+              marker={markers.filter(({ id }) => panoId === id)[0]}
+              userHeading={userHeading}
+            />
+          )}
           {figureToShow &&
             markers.filter(({ id }) => panoId === id).length > 0 && (
               <div

@@ -63,7 +63,7 @@ module.exports = async (panoId, heading) => {
   console.log(shiftedXValues.length);
 
   let svg =
-    '<svg height="600" width="600" xmlns="http://www.w3.org/2000/svg">\n';
+    '<svg height="500" width="500" xmlns="http://www.w3.org/2000/svg">\n';
   svg +=
     '<circle cx="250" cy="250" r="250" stroke="black" stroke-width="1" fill="none" />\n';
 

@@ -117,6 +117,7 @@ app.get("/:panoId", async (req, res, next) => {
         intensity: intensity,
         percents: percent_obj,
         object_count: objectCountJson,
+        heading: heading
       });
     });
   } catch (err) {
