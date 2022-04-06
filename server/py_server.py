@@ -24,40 +24,20 @@ zoom = int(sys.argv[5])
 print(pano_heading, pano_latitude, pano_longitude, pano_id, zoom)
 
 def get_depth_per_point(pano_id, pano_width):
-    data = np.load(f'./data/{pano_id}/pano_img_depth.npy')
-    data = data[0][0]
-    print(data.shape)
+    depthMatrix = np.load(f"./data/{pano_id}/pano_img_depth.npy")[0][0]
+    rows = depthMatrix.shape[0]
+    columns = depthMatrix.shape[1]
 
-    pano_x_dim = pano_width
+    depthMatrix = depthMatrix[:, int(0.2*rows):int(0.7*rows)]
 
-    depth_per_x = []
+    depthArray=np.average(depthMatrix, axis = 0)
 
-    for i in range(int(data.shape[1])):
-        all_depths_added = 0
-        for j in range(int(data.shape[0] / 2)):
-            all_depths_added += data[j][i]
+    depthArrayImage=np.zeros(pano_width)
 
-        avg_distance_away = all_depths_added / int(data.shape[0] / 2)
-        depth_per_x.append(avg_distance_away)
+    for i in range(pano_width): 
+        depthArrayImage[i] = depthArray[int(columns/pano_width * i)-1]
 
-    print(len(depth_per_x), max(depth_per_x) + 5)
-
-    pano_adjusted_depth_arr = np.zeros(pano_x_dim)
-
-    past_x = 0
-    for depth_x_loc in range(len(depth_per_x)):
-        x_pix_loc = math.floor(pano_x_dim / data.shape[1] * depth_x_loc)
-        pano_adjusted_depth_arr[x_pix_loc] = depth_per_x[depth_x_loc]
-        for i in range(past_x + 1, x_pix_loc):
-            pano_adjusted_depth_arr[i] = depth_per_x[depth_x_loc]
-        past_x = x_pix_loc
-    pano_adjusted_depth_arr[-1] = depth_per_x[-1]
-
-    with open(f'./data/{pano_id}/depth_data.txt', 'w') as f:
-        for i in pano_adjusted_depth_arr:
-            f.write(f'{i}\n')
-
-    return
+    np.savetxt(f"./data/{pano_id}/depth_data.txt", depthArrayImage, fmt='%f')
 
 def fig2img(fig):
     """Convert a Matplotlib figure to a PIL Image and return it"""
@@ -68,32 +48,16 @@ def fig2img(fig):
     img = Image.open(buf)
     return img
 
-def objectDetection (pano_id):
-
+def objectDetection (pano_id, pano_latitude, pano_longitude, pano_heading):
+    print("--- Started objectDetection ---")
     absolutePath=os.getcwd()
-    json_file_path = f"./data/{pano_id}/processed/object_detection.json"
-    print(absolutePath)
-
-    yoloOutput = subprocess.run(["python", f"{absolutePath}\\yolov5\\main.py", f"{absolutePath}", f"{pano_id}"], shell= True, capture_output = True, text = True)
+    yoloOutput = subprocess.run(["python", f"{absolutePath}\\yolov5\\main.py", f"{absolutePath}", f"{pano_id}", f"{pano_latitude}",f"{pano_longitude}",f"{pano_heading}"], shell= True, capture_output = True, text = True)
     print(yoloOutput.stdout)
     print(yoloOutput.stderr)
 
-    df = pd.read_json(yoloOutput.stdout)
-
-    count_json={}
-    if not df.empty:
-        temp = df["name"].value_counts()
-        classes = temp.keys().tolist()
-        counts  = temp.tolist()
-
-        for i in range (len(classes)):
-            count_json[classes[i]] =  counts[i]
-
-    with open(json_file_path, "w") as outfile:
-        json.dump(count_json, outfile)
 
 def depthDetection(pano_id):
-    print("Started depthDetection")
+    print("--- Started depthDetection ---")
     absolutePath=os.getcwd()
     depthOutput = subprocess.run(["python", f"{absolutePath}\\monodepth2\\main.py", f"{absolutePath}", f"{pano_id}"], shell= True, capture_output = True, text = True)
     print(depthOutput.stdout)
@@ -115,11 +79,11 @@ if __name__ == '__main__':
 
     pano_img.save(f'./data/{pano_id}/pano_img.png')
 
-    objectDetection(pano_id)
-
     depthDetection(pano_id)
 
-    get_depth_per_point(pano_id, pano_width=panorama.shape[1])
+    objectDetection(pano_id, pano_latitude, pano_longitude, pano_heading)
+
+    #get_depth_per_point(pano_id, pano_width=panorama.shape[1])
 
     # print(panorama)
 
@@ -182,7 +146,7 @@ if __name__ == '__main__':
     # kmask = sky_mask > 0
     img_sky_mask = sky_openings > 0
     img_sky_mask[int(img_str_mask.shape[0] / 2) : img_str_mask.shape[0]] = False
-    print('img_sky_mask', img_sky_mask, img_sky_mask.shape, img_sky_mask[0:int(img_sky_mask.shape[0] / 2)].shape)
+    #print('img_sky_mask', img_sky_mask, img_sky_mask.shape, img_sky_mask[0:int(img_sky_mask.shape[0] / 2)].shape)
 
 
 
