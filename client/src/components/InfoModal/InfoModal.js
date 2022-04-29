@@ -9,7 +9,7 @@ const PlotDetailsTab = ({ percentages, figure, objectCount }) => {
   const street = percentages?.street || null;
   const green = percentages?.green || null;
   // objects
-  const bench = objectCount?.bench || null;
+  const bench = objectCount?.bench?.count || null;
   console.log(bench);
 
   return (
