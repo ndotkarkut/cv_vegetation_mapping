@@ -10,14 +10,37 @@ const makeSvgPoint = (theta, r, yMax, greenVal, maxGreenVal) => {
   const xCoord = 250 + x;
   const yCoord = 250 + y;
 
-  // return `<line x1="250" y1="250" x2="${xCoord}" y2="${yCoord}" style="stroke: green; stroke-width:2" />\n`;
   return `<circle r="${norm_green_r}" cx="${xCoord}" cy="${yCoord}" fill="green" style="stroke: green; stroke-width:1" />\n`;
+};
+
+const makeSvgBench = (depth, heading, yMax) => {
+  const adjustedHeading = +heading - 65;
+  const theta = (adjustedHeading * Math.PI) / 180;
+  const norm_depth = (+depth / (yMax + 2)) * 240;
+
+  const x = +norm_depth * Math.cos(-1 * +theta);
+  const y = +norm_depth * Math.sin(-1 * +theta);
+
+  const xCoord = 250 + x;
+  const yCoord = 250 - y;
+
+  console.log(adjustedHeading, theta, norm_depth, x, y, xCoord, yCoord);
+
+  return `<image x="${xCoord}" y="${yCoord}" width="${20}" height="${20}" href="${"https://cdn-icons-png.flaticon.com/512/1024/1024639.png"}" />`;
+  return `<circle r="${15}" cx="${xCoord}" cy="${yCoord}" fill="#87ceeb" style="stroke: #87ceeb; stroke-width:1" />\n`;
 };
 
 module.exports = async (panoId, heading) => {
   const xValues = await readFile(`./data/${panoId}/values_x.txt`);
   const yValues = await readFile(`./data/${panoId}/depth_data.txt`);
   const greenValues = await readFile(`./data/${panoId}/values_y.txt`);
+  const objectDetection = await readFile(
+    `./data/${panoId}/processed/object_detection.json`
+  );
+
+  const {
+    bench: { coordinates },
+  } = JSON.parse(objectDetection);
 
   //   console.log(xValues);
   const xValArray = xValues.split("\r\n");
@@ -76,6 +99,11 @@ module.exports = async (panoId, heading) => {
       maxGreenValue
     );
     // svg += makeSvgLine(xValArray[idx], yValArray[idx]);
+  }
+
+  for (let { depth, heading } of coordinates) {
+    console.log("adding bench to svg", depth, heading, maxValue);
+    svg += makeSvgBench(depth, heading, maxValue);
   }
 
   let entireSvg = `

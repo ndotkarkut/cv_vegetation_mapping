@@ -71,7 +71,7 @@ const MapMarker = (props) => {
         origin: new window.google.maps.Point(0, 0),
         anchor: new window.google.maps.Point(100, 100),
       }}
-      id={panoId}
+      id={panoId} 
       onClick={onClickHandler}
     />
   );

@@ -278,7 +278,7 @@ const App = () => {
         });
       })
     );
-
+//dsad
     setNewMarkerPositions([]);
     setUploading(false);
     setUploaded(true);
@@ -413,7 +413,7 @@ const App = () => {
         ))}
 
 
-        {benches.map((coordinates, idx) => (
+        {/* {benches.map((coordinates, idx) => (
           <Marker
             key={idx}
             position={coordinates}
@@ -425,7 +425,7 @@ const App = () => {
             }}
             id={idx}
         />
-        ))}
+        ))} */}
         {showPromptMarker && (
           <PromptMarker
             position={{ lat: panoLat, lng: panoLng }}
