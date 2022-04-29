@@ -13,16 +13,24 @@ const makeSvgPoint = (theta, r, yMax, greenVal, maxGreenVal) => {
   return `<circle r="${norm_green_r}" cx="${xCoord}" cy="${yCoord}" fill="green" style="stroke: green; stroke-width:1" />\n`;
 };
 
-const makeSvgBench = (depth, heading, yMax) => {
-  const adjustedHeading = +heading - 65;
-  const theta = (adjustedHeading * Math.PI) / 180;
-  const norm_depth = (+depth / (yMax + 2)) * 240;
+const fakeDepthScaling = (depth, maxDepth) =>
+{  
+  const adjustedDepth = depth >= maxDepth*0.75 ? depth - maxDepth*0.35  : depth - maxDepth*0.15
+  console.log("depth",depth,"maxDepth", maxDepth,"adjustedDepth", adjustedDepth)
+  return adjustedDepth / 1.3
+} 
 
-  const x = +norm_depth * Math.cos(-1 * +theta);
-  const y = +norm_depth * Math.sin(-1 * +theta);
+const makeSvgBench = (depth, heading, yMax, maxBenchDepth) => {
+  const adjustedHeading = +heading - 90;
+  const theta = (adjustedHeading * Math.PI) / 180;
+  const norm_depth = (fakeDepthScaling(depth, maxBenchDepth) / (yMax+2)) * 240;
+  console.log("yMax", yMax)
+  console.log("depth", depth, "norm_depth", norm_depth)
+  const x = norm_depth * Math.cos(theta);
+  const y = norm_depth * Math.sin(theta);
 
   const xCoord = 250 + x;
-  const yCoord = 250 - y;
+  const yCoord = 250 + y;
 
   console.log(adjustedHeading, theta, norm_depth, x, y, xCoord, yCoord);
 
@@ -47,7 +55,7 @@ module.exports = async (panoId, heading) => {
   const yValArray = yValues.split("\r\n");
   const greenValArray = greenValues.split("\r\n");
   console.log(yValArray);
-  const yValInts = yValArray.map((x) => parseInt(x));
+  const yValInts = yValArray.map((x) => parseFloat(x));
   const greenValInts = greenValArray.map((x) => parseInt(x));
   console.log(yValInts);
 
@@ -101,9 +109,16 @@ module.exports = async (panoId, heading) => {
     // svg += makeSvgLine(xValArray[idx], yValArray[idx]);
   }
 
+  const benchArrayDepth = []
+  for (let { depth, heading } of coordinates) {
+    benchArrayDepth.push(depth)
+  }
+  const maxBenchDepth = Math.max(...benchArrayDepth)
+  console.log(maxBenchDepth)
+  console.log(benchArrayDepth)
   for (let { depth, heading } of coordinates) {
     console.log("adding bench to svg", depth, heading, maxValue);
-    svg += makeSvgBench(depth, heading, maxValue);
+    svg += makeSvgBench(depth, heading, maxValue, maxBenchDepth);
   }
 
   let entireSvg = `
