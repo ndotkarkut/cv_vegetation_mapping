@@ -18,6 +18,9 @@ from PIL import Image
 import json
 from math import sin, cos, asin, acos, atan2, radians, degrees
 
+import geopy
+#from geopy.distance import VincentyDistance
+
 def inxY(pixel_index, pano_width):
     return int(320/pano_width * pixel_index)
 
@@ -27,25 +30,35 @@ def inxX(pixel_index, pano_height):
 def getHeading(pano_heading, pano_x_mid, x_mid, heading_per_pixel):
     heading = heading_per_pixel * x_mid
 
-    heading = pano_heading - 180 +  heading if pano_x_mid > x_mid  else pano_heading + 180 - heading
+    print(pano_x_mid, x_mid)
+    heading = pano_heading - 180 +  heading #if pano_x_mid > x_mid  else pano_heading + 180 - heading
 
     if heading < 0:
         heading = 360 + heading
     elif heading > 360:
-        heading = 360 % heading
+        heading = heading % 360 #360 % heading
 
     return heading
 
 def getCoordinates(orgLat, orgLon, heading, depth):
+    print(orgLat,orgLon)
     R = 6378100
     delta = depth / R
+    print(delta)
+    print(delta/10)
     orgLat = radians(orgLat)
     orgLon = radians(orgLon)
     heading = radians(heading)
     newLat   = asin( sin(orgLat) * cos(delta)  + cos(orgLat) * sin(delta) * cos(heading) )
     newLong  = orgLon + atan2( sin(heading) * sin(delta) * cos(orgLat), cos(delta) -  sin(orgLat) * sin(newLat) )
-    #print(degrees(newLat), degrees(newLong))
+    print(degrees(newLat), degrees(newLong))
     return degrees(newLat), degrees(newLong)
+
+    # origin = geopy.Point(orgLat, orgLon)
+    # destination = VincentyDistance(meters=depth).destination(origin, heading)
+
+    # lat2, lon2 = destination.latitude, destination.longitude
+    # return lat2, lon2
 
 
 absolutePath = str(sys.argv[1])
@@ -81,8 +94,12 @@ combined_image = Image.fromarray(combined_image)
 combined_image.save(f"{absolutePath}\\data\\{pano_id}\\processed\\pano_img.jpg")
 combined_image.show()
 
-
-df = pd.concat([results.pandas().xyxy[0],results.pandas().xyxy[1]], ignore_index=True)
+temp_pd = results.pandas().xyxy[1]
+for index, row in temp_pd.iterrows():
+    temp_pd.loc[index , "xmin"]  += width_cutoff
+    temp_pd.loc[index , "xmax"]  += width_cutoff
+   
+df = pd.concat([results.pandas().xyxy[0],temp_pd], ignore_index=True)
 #print(pd)
 
 depthMatrix = np.load(f"{absolutePath}\\data\\{pano_id}\\pano_img_depth.npy")[0][0]
@@ -117,7 +134,7 @@ for index, row in df.iterrows():
 print(df)
 coordinatesArray=[]
 for index, row in df.iterrows():
-    coordinatesArray.append( {"lat":df.loc[index , "latitude"], "lng":df.loc[index , "longitude"]})
+    coordinatesArray.append( {"depth":df.loc[index , "depth"], "heading":df.loc[index , "heading"],"lat":df.loc[index , "latitude"], "lng":df.loc[index , "longitude"]})
 
 print(coordinatesArray)
 json_file_path = f"{absolutePath}/data/{pano_id}/processed/object_detection.json"

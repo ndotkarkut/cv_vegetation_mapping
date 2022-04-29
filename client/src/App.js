@@ -9,6 +9,7 @@ import "./App.css";
 
 import {
   GoogleMap,
+  Marker,
   StreetViewPanorama,
   useLoadScript,
 } from "@react-google-maps/api";
@@ -64,6 +65,8 @@ const App = () => {
     useState(false);
   const [links, setLinks] = useState([]);
   const [pov, setPov] = useState([]);
+
+  const [benches, setBenches] = useState([]);
 
   useEffect(() => {
     if (uploaded) {
@@ -336,6 +339,7 @@ const App = () => {
     // console.log(markerToAdd);
 
     setMarkers((curMarkers) => [...curMarkers, markerToAdd]);
+    setBenches((curBenches) => [...curBenches, ...object_count?.bench?.coordinates]);
     setFigureToShow(figures);
     setShowPromptMarker(false);
     panoRef.setPano(panoId);
@@ -406,6 +410,21 @@ const App = () => {
             onClick={() => showPano(idx)}
             onMarkerMoved={onMarkerMovedHandler}
           />
+        ))}
+
+
+        {benches.map((coordinates, idx) => (
+          <Marker
+            key={idx}
+            position={coordinates}
+            icon={{
+              url: `https://cdn-icons-png.flaticon.com/512/1024/1024639.png`,
+              scaledSize: new window.google.maps.Size(15, 15),
+              origin: new window.google.maps.Point(0, 0),
+              anchor: new window.google.maps.Point(7.5, 7.5),
+            }}
+            id={idx}
+        />
         ))}
         {showPromptMarker && (
           <PromptMarker
