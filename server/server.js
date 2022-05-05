@@ -98,7 +98,7 @@ app.get("/:panoId", async (req, res, next) => {
 
       const objectCountJson = JSON.parse(objectCount);
 
-      console.log("object count", objectCount, objectCountJson);
+      //console.log("object count", objectCount, objectCountJson);
       // const svg = await base64_encode("./data/pano.svg");
       // const figures = await readFile("./data/pano_figures.png");
       const figures_64 = await base64_encode(

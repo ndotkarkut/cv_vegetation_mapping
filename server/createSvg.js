@@ -19,9 +19,9 @@ module.exports = async (panoId, heading) => {
   //   console.log(xValues);
   const xValArray = xValues.split("\r\n");
   const yValArray = yValues.split("\r\n");
-  console.log(yValArray);
+  //console.log(yValArray);
   const yValInts = yValArray.map((x) => parseInt(x));
-  console.log(yValInts);
+  //console.log(yValInts);
 
   let maxValue = yValInts[0];
   for (let i = 1; i < yValInts.length; ++i) {
@@ -29,7 +29,7 @@ module.exports = async (panoId, heading) => {
       maxValue = yValInts[i];
     }
   }
-  console.log(maxValue);
+  //console.log(maxValue);
 
   const numToShift = +(xValArray.length * ((+heading).toFixed(20) / 360));
 
@@ -47,7 +47,7 @@ module.exports = async (panoId, heading) => {
 
   const shiftedXValues = newArrayBeginning.concat(slicedElsToBack);
 
-  console.log(shiftedXValues.length);
+ // console.log(shiftedXValues.length);
 
   let svg =
     '<svg height="500" width="500" xmlns="http://www.w3.org/2000/svg">\n';

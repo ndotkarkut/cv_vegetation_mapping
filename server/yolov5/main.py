@@ -41,17 +41,17 @@ def getHeading(pano_heading, pano_x_mid, x_mid, heading_per_pixel):
     return heading
 
 def getCoordinates(orgLat, orgLon, heading, depth):
-    print(orgLat,orgLon)
+    #print(orgLat,orgLon)
     R = 6378100
     delta = depth / R
-    print(delta)
-    print(delta/10)
+    #print(delta)
+    #print(delta/10)
     orgLat = radians(orgLat)
     orgLon = radians(orgLon)
     heading = radians(heading)
     newLat   = asin( sin(orgLat) * cos(delta)  + cos(orgLat) * sin(delta) * cos(heading) )
     newLong  = orgLon + atan2( sin(heading) * sin(delta) * cos(orgLat), cos(delta) -  sin(orgLat) * sin(newLat) )
-    print(degrees(newLat), degrees(newLong))
+    #print(degrees(newLat), degrees(newLong))
     return degrees(newLat), degrees(newLong)
 
     # origin = geopy.Point(orgLat, orgLon)
