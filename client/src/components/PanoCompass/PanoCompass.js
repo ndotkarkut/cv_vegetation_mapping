@@ -12,13 +12,17 @@ export default function PanoCompass({ panoId, marker, userHeading }) {
     <div
       style={{
         position: "absolute",
-        bottom: 100,
+        // bottom: 100,
+        bottom: 50,
         right: 100,
         // margin: "10px",
         zIndex: 1999,
         height: "170px",
         width: "170px",
         borderRadius: "85px",
+        height: "250px",
+        width: "250px",
+        borderRadius: "125px",
         backgroundColor: "white",
       }}
     >
@@ -27,17 +31,19 @@ export default function PanoCompass({ panoId, marker, userHeading }) {
         style={{
           height: "170px",
           width: "170px",
+          height: "250px",
+          width: "250px",
           objectFit: "center center",
         }}
       />
       <FaLocationArrow
         color="red"
-        size={30}
+        size={20}
         style={{
           transform: `rotate(${rotation}deg)`,
           position: "absolute",
-          bottom: 72.5,
-          right: 72.5,
+          bottom: 115,
+          right: 115,
         }}
       />
     </div>
