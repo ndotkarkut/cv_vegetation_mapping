@@ -9,24 +9,26 @@ export default function PanoCompass({ panoId, marker, userHeading }) {
 
   return (
     <div
-      className={styles.container}
+      className={
+        enlarged ? `${styles.container} ${styles.enlarged}` : styles.container
+      }
       onClick={() => setEnlarged(!enlarged)}
-      style={enlarged ? { height: 500, width: 500, borderRadius: 250 } : {}}
     >
       <img
         src={`http://localhost:8888/${panoId}/depth_svg.svg`}
-        className={styles.compass}
-        style={enlarged ? { height: 500, width: 500 } : {}}
+        className={
+          enlarged ? `${styles.compass} ${styles.enlarged}` : styles.compass
+        }
       />
       <FaLocationArrow
         color="red"
         size={20}
         style={{
           transform: `rotate(${rotation}deg)`,
-          bottom: enlarged ? 240 : 115,
-          right: enlarged ? 240 : 115,
         }}
-        className={styles.arrow}
+        className={
+          enlarged ? `${styles.arrow} ${styles.enlarged}` : styles.arrow
+        }
       />
     </div>
   );
