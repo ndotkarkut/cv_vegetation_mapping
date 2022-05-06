@@ -1,50 +1,32 @@
 import React from "react";
 import { FaLocationArrow } from "react-icons/fa";
+import styles from "./PanoCompass.module.css";
 
 export default function PanoCompass({ panoId, marker, userHeading }) {
-  console.log("pano compass marker", +marker.heading);
-  const heading = +marker.heading;
-
+  const [enlarged, setEnlarged] = React.useState(false);
   const rotation = -45 + +userHeading;
-  console.log(rotation)
+  console.log(rotation);
 
   return (
     <div
-      style={{
-        position: "absolute",
-        // bottom: 100,
-        bottom: 50,
-        right: 100,
-        // margin: "10px",
-        zIndex: 1999,
-        height: "170px",
-        width: "170px",
-        borderRadius: "85px",
-        height: "250px",
-        width: "250px",
-        borderRadius: "125px",
-        backgroundColor: "white",
-      }}
+      className={styles.container}
+      onClick={() => setEnlarged(!enlarged)}
+      style={enlarged ? { height: 500, width: 500, borderRadius: 250 } : {}}
     >
       <img
         src={`http://localhost:8888/${panoId}/depth_svg.svg`}
-        style={{
-          height: "170px",
-          width: "170px",
-          height: "250px",
-          width: "250px",
-          objectFit: "center center",
-        }}
+        className={styles.compass}
+        style={enlarged ? { height: 500, width: 500 } : {}}
       />
       <FaLocationArrow
         color="red"
         size={20}
         style={{
           transform: `rotate(${rotation}deg)`,
-          position: "absolute",
-          bottom: 115,
-          right: 115,
+          bottom: enlarged ? 240 : 115,
+          right: enlarged ? 240 : 115,
         }}
+        className={styles.arrow}
       />
     </div>
   );

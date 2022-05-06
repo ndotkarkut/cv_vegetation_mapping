@@ -1,0 +1,23 @@
+.container {
+  position: absolute;
+  bottom: 50px;
+  right: 100px;
+  z-index: 1999;
+  height: 250px;
+  width: 250px;
+  border-radius: 125px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.compass {
+  height: 250px;
+  width: 250px;
+  object-fit: center center;
+}
+
+.arrow {
+  position: absolute;
+  bottom: 115px;
+  right: 115px;
+}
