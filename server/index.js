@@ -9,14 +9,14 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 
-const PORT = process.env.PORT || 4444;
+const PORT = process.env.PORT || 8888;
 
 app.listen(PORT, () => {
   console.log(`Listening at http://localhost:${PORT}`);
 });
 
 app.use(express.json());
-app.use(cors());
+app.use(cors('*'));
 
 app.get("/allPanos", async (req, res, next) => {
   const panoCollectionRef = await collection.get();

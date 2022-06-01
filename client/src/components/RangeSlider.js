@@ -2,9 +2,17 @@ import React, { useEffect, useState } from "react";
 
 import "./RangeSlider.scss";
 
-const RangeSlider = (props) => {
-  const { setCurrentValue } = props;
-  const [value, setValue] = useState(3);
+const RangeSlider = ({
+  setCurrentValue,
+  style,
+  min,
+  max,
+  minTitle,
+  maxTitle,
+  title,
+  initialValue,
+}) => {
+  const [value, setValue] = useState(initialValue || Math.ceil(max / 2));
 
   useEffect(() => {
     setCurrentValue(value);
@@ -14,8 +22,8 @@ const RangeSlider = (props) => {
     <div
       style={{
         position: "absolute",
-        bottom: 0,
-        left: 0,
+        // bottom: 0,
+        // left: 0,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -26,14 +34,15 @@ const RangeSlider = (props) => {
         border: "1px solid black",
         borderRadius: "15px",
         margin: "10px",
-        overflow: 'hidden',
-        zIndex: 1999
+        overflow: "hidden",
+        zIndex: 1999,
+        ...style,
       }}
     >
       <div class="range-slider" style={{ width: "400px" }}>
         <div class="range-group" style={{ width: "100%" }}>
           <p style={{ margin: "5px", color: "white", width: "400px" }}>
-            Greenery Pano Resolution: {value}
+            {title}: {value}
           </p>
           <div
             style={{
@@ -44,14 +53,14 @@ const RangeSlider = (props) => {
             }}
           >
             <p style={{ color: "white", fontSize: "12px", paddingTop: "10px" }}>
-              Lower Quality
+              {minTitle}
             </p>
             <input
               class="range-input"
               id="location-range-slider"
               value={value}
-              min="1"
-              max="5"
+              min={min}
+              max={max}
               type="range"
               onInput={(e) => setValue(e.target.value)}
             />
@@ -63,7 +72,7 @@ const RangeSlider = (props) => {
                 textAlign: "end",
               }}
             >
-              Higher Quality
+              {maxTitle}
             </p>
           </div>
         </div>

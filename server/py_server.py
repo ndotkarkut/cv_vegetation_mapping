@@ -11,6 +11,9 @@ import os
 import sys
 import torch
 import pandas as pd
+import json
+import math
+from timeit import default_timer as timer
 
 # arguments
 pano_latitude = float(sys.argv[1])
@@ -29,32 +32,41 @@ def fig2img(fig):
     img = Image.open(buf)
     return img
 
-def objectDetection (pano_img, pano_id):
-
+def objectDetection (pano_id, pano_latitude, pano_longitude, pano_heading):
+    print("--- Started objectDetection ---")
     absolutePath=os.getcwd()
-    print(absolutePath)
-
-    yoloOutput = subprocess.run(["python", f"{absolutePath}\\yolov5\\main.py", f"{absolutePath}", f"{pano_id}"], shell= True, capture_output = True, text = True)
-    # yoloOutput = subprocess.run(f"python {absolutePath}\\yolov5\\main.py {absolutePath} {pano_id} ", shell= True, capture_output = True, text = True)
-    #print(yoloOutput.stdout)
+    yoloOutput = subprocess.run(["python", f"{absolutePath}\\yolov5\\main.py", f"{absolutePath}", f"{pano_id}", f"{pano_latitude}",f"{pano_longitude}",f"{pano_heading}"], shell= True, capture_output = True, text = True)
+    print(yoloOutput.stdout)
     print(yoloOutput.stderr)
 
-    print(pd.read_json(yoloOutput.stdout))
+
+def depthDetection(pano_id):
+    print("--- Started depthDetection ---")
+    absolutePath=os.getcwd()
+    depthOutput = subprocess.run(["python", f"{absolutePath}\\monodepth2\\main.py", f"{absolutePath}", f"{pano_id}"], shell= True, capture_output = True, text = True)
+    print(depthOutput.stdout)
+    print(depthOutput.stderr)
 
 if __name__ == '__main__':
 
     panoids = streetview.panoids(lat=pano_latitude, lon=-pano_longitude)
+    print(panoids, pano_id)
 
     # panoid = panoids[0]['panoid']
     panoid = pano_id
     panorama = streetview.download_panorama_v3(panoid, zoom=zoom, disp=True)
     pano_img = Image.fromarray(panorama)
-    if ~os.path.isdir(f"./data/{pano_id}"): os.mkdir(f"./data/{pano_id}")
+
+    #print(not os.path.isdir(f"./data/{pano_id}"))
+    if not os.path.isdir(f"./data/{pano_id}"): 
+        os.mkdir(f"./data/{pano_id}")
 
     pano_img.save(f'./data/{pano_id}/pano_img.png')
 
-    objectDetection(pano_img,pano_id)
-  
+    depthDetection(pano_id)
+
+    objectDetection(pano_id, pano_latitude, pano_longitude, pano_heading)
+
     # print(panorama)
 
     # plt.imshow(pano_img)
@@ -80,35 +92,54 @@ if __name__ == '__main__':
     # sky_min = np.asarray([0, 0, 0])   
     # sky_max = np.asarray([255, 100, 255])  
      
+    kernel = np.ones((5, 5), np.uint8)
 
-    mask = cv2.inRange(img_hsv, green_min, green_max)
+    greenery_mask = cv2.inRange(img_hsv, green_min, green_max)
     # sky_mask = cv2.inRange(img_hsv, sky_min, sky_max)
-    gray_mask = cv2.inRange(img_hsv, gray_min, gray_max)
-    blue_mask = cv2.inRange(img_hsv, blue_min, blue_max)
+    street_mask = cv2.inRange(img_hsv, gray_min, gray_max)
+    sky_mask = cv2.inRange(img_hsv, blue_min, blue_max)
+
+    greenery_openings = cv2.morphologyEx(greenery_mask, cv2.MORPH_OPEN, kernel)
+    street_openings = cv2.morphologyEx(street_mask, cv2.MORPH_OPEN, kernel)
+    sky_openings = cv2.morphologyEx(sky_mask, cv2.MORPH_OPEN, kernel)
+
+    morphology_dir = f'./data/{pano_id}/morphology'
+
+    if not os.path.isdir(f'{morphology_dir}'):
+        os.mkdir(f'{morphology_dir}')
+
+    cv2.imwrite(f'{morphology_dir}/greenery_mask.jpg', greenery_mask)
+    cv2.imwrite(f'{morphology_dir}/greenery_openings.jpg', greenery_openings)
+    cv2.imwrite(f'{morphology_dir}/street_mask.jpg', street_mask)
+    cv2.imwrite(f'{morphology_dir}/street_openings.jpg', street_openings)
+    cv2.imwrite(f'{morphology_dir}/sky_mask.jpg', sky_mask)
+    cv2.imwrite(f'{morphology_dir}/sky_opening.jpg', sky_openings)
 
     # slice the green
-    imask = mask > 0
+    img_g_mask = greenery_openings > 0
     img_w_green = np.zeros_like(img, np.uint8)
-    img_w_green[imask] = img[imask]
+    img_w_green[img_g_mask] = img[img_g_mask]
     # slice the gray
-    jmask = gray_mask > 0
-    jmask[0:int(jmask.shape[0] / 2)] = False
+    img_str_mask = street_openings > 0
+    img_str_mask[0:int(img_str_mask.shape[0] / 2)] = False
     img_w_gray = np.zeros_like(img, np.uint8)
-    img_w_gray[jmask] = img[jmask]
+    img_w_gray[img_str_mask] = img[img_str_mask]
     # slice the blue and gray
     # kmask = sky_mask > 0
-    lmask = blue_mask > 0
-    lmask[int(jmask.shape[0] / 2) : jmask.shape[0]] = False
-    print('lmask', lmask, lmask.shape, lmask[0:int(lmask.shape[0] / 2)].shape)
+    img_sky_mask = sky_openings > 0
+    img_sky_mask[int(img_str_mask.shape[0] / 2) : img_str_mask.shape[0]] = False
+    #print('img_sky_mask', img_sky_mask, img_sky_mask.shape, img_sky_mask[0:int(img_sky_mask.shape[0] / 2)].shape)
+
+
 
     img_copy = img.copy()
     # make image that highlights the skyblue in RGB
     # img_copy[kmask] = [75, 255, 75]
-    img_copy[lmask] = [165, 203, 246]
-    # make image that highlights the gray in RGB
-    img_copy[jmask] = [175, 175, 175]
+    img_copy[img_sky_mask] = [165, 203, 246]
+    # # make image that highlights the gray in RGB
+    img_copy[img_str_mask] = [175, 175, 175]
     # make image that highlights the green in RGB
-    img_copy[imask] = [75, 255, 75]
+    img_copy[img_g_mask] = [75, 255, 75]
 
     sky_pixels = 0
     green_pixels = 0
@@ -122,7 +153,15 @@ if __name__ == '__main__':
                 sky_pixels += 1
             elif np.array_equal(np.array([75,255,75]), np.array(img_copy[x][y])):
                 green_pixels += 1
+
+    img_copy_2 = img.copy()
         
+    # img_copy[kmask] = [75, 255, 75]
+    img_copy_2[img_sky_mask] = [165, 203, 246]
+    # # make image that highlights the gray in RGB
+    # img_copy_2[img_str_mask] = [175, 175, 175]
+    # make image that highlights the green in RGB
+    img_copy_2[img_g_mask] = [75, 255, 75]
 
     total_pixels = img_copy.shape[0] * img_copy.shape[1]
     print('total pixels:', total_pixels)
@@ -136,22 +175,22 @@ if __name__ == '__main__':
     print(sky_px_percent + green_px_percent + street_px_percent)
 
     # and save it
-    pano_img = Image.fromarray(img_copy)
+    pano_img = Image.fromarray(img_copy_2)
     pano_img.save(f'./data/{pano_id}/pano_img_intensity.png')
 
-    x_axis = np.arange(start=0, stop=mask.shape[1], step=1)
-    theta_axis = np.linspace(0, 2 * np.pi, mask.shape[1])
+    x_axis = np.arange(start=0, stop=greenery_openings.shape[1], step=1)
+    theta_axis = np.linspace(0, 2 * np.pi, greenery_openings.shape[1])
 
     # polar axis shifted by 90deg to have middle of image in front 
-    theta_axis_shifted = np.roll(theta_axis, int(mask.shape[1] * 3 / 4) )
+    theta_axis_shifted = np.roll(theta_axis, int(greenery_openings.shape[1] * 3 / 4) )
     # theta_axis_shifted = theta_axis
 
     green_pixels_by_x = []
 
-    for y in range(mask.shape[1]):
+    for y in range(greenery_openings.shape[1]):
         num_green_pixels = 0
-        for x in range(mask.shape[0]):
-            if mask[x][y] > 0:
+        for x in range(greenery_openings.shape[0]):
+            if greenery_openings[x][y] > 0:
                 num_green_pixels += 1
         green_pixels_by_x.append(num_green_pixels)
 
@@ -162,7 +201,7 @@ if __name__ == '__main__':
     plt.imshow(img)
     plt.subplot(222)
     plt.title('360deg Image with green color mask')
-    plt.imshow(mask, cmap='gray')   # this colormap will display in black / white
+    plt.imshow(greenery_openings, cmap='gray')   # this colormap will display in black / white
     plt.subplot(223, projection='polar')
     plt.title('Polar green pixel frequency graph')
     plt.plot(theta_axis_shifted, green_pixels_by_x)
@@ -179,7 +218,7 @@ if __name__ == '__main__':
     with open(f'./data/{pano_id}/values_y.txt', 'w') as f:
         for el in green_pixels_by_x:
             f.write(str(el)  + '\n')
-    with open('./data/img_percents.txt', 'w') as f:
+    with open(f'./data/{pano_id}/img_percents.txt', 'w') as f:
         f.write(f"{str(sky_px_percent)},{str(green_px_percent)},{str(street_px_percent)}")
 
     # polar_figure = plt.plot(theta_axis_shifted, green_pixels_by_x)qq

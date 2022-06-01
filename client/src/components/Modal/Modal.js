@@ -6,7 +6,12 @@ const Modal = ({ show, close, children }) => {
 
   return (
     <div
-      onClick={close}
+    onClick={(e) => {
+      e.stopPropagation();
+      if (e.target === backdrop.current) {
+        close();
+      }
+    }}
       ref={backdrop}
       className={show ? "modal__backdrop active" : "modal__backdrop"}
     >

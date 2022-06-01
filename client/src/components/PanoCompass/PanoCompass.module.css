@@ -1,0 +1,42 @@
+.container {
+  position: absolute;
+  bottom: 50px;
+  right: 100px;
+  z-index: 1999;
+  height: 250px;
+  width: 250px;
+  border-radius: 125px;
+  background-color: white;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.container.enlarged {
+  height: 500px;
+  width: 500px;
+  border-radius: 250px;
+}
+
+.compass {
+  height: 250px;
+  width: 250px;
+  object-fit: center center;
+  transition: all 200ms ease;
+}
+
+.compass.enlarged {
+  height: 500px;
+  width: 500px;
+}
+
+.arrow {
+  position: absolute;
+  bottom: 115px;
+  right: 115px;
+  transition: all 200ms ease;
+}
+
+.arrow.enlarged {
+  bottom: 240px;
+  right: 240px;
+}
