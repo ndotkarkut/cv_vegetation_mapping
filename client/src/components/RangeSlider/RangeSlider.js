@@ -39,8 +39,8 @@ const RangeSlider = ({
         ...style,
       }}
     >
-      <div class="range-slider" style={{ width: "400px" }}>
-        <div class="range-group" style={{ width: "100%" }}>
+      <div className="range-slider" style={{ width: "400px" }}>
+        <div className="range-group" style={{ width: "100%" }}>
           <p style={{ margin: "5px", color: "white", width: "400px" }}>
             {title}: {value}
           </p>
@@ -56,7 +56,7 @@ const RangeSlider = ({
               {minTitle}
             </p>
             <input
-              class="range-input"
+              className="range-input"
               id="location-range-slider"
               value={value}
               min={min}

@@ -3,17 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import subprocess
 from PIL import Image
-import svgwrite 
-import requests
-import streetview
-from skimage import io
+import panoramas
 import os 
 import sys
-import torch
-import pandas as pd
-import json
-import math
-from timeit import default_timer as timer
 
 # arguments
 pano_latitude = float(sys.argv[1])
@@ -48,13 +40,12 @@ def depthDetection(pano_id):
     print(depthOutput.stderr)
 
 if __name__ == '__main__':
-
-    panoids = streetview.panoids(lat=pano_latitude, lon=-pano_longitude)
-    print(panoids, pano_id)
-
     # panoid = panoids[0]['panoid']
-    panoid = pano_id
-    panorama = streetview.download_panorama_v3(panoid, zoom=zoom, disp=True)
+    # panorama = streetview.download_panorama_v3(pano_id, zoom=zoom, disp=True)
+    # print('panorama', panorama)
+
+    # new logic
+    panorama = panoramas.download_streetview_panorama(panoid=pano_id, zoom=zoom)
     pano_img = Image.fromarray(panorama)
 
     #print(not os.path.isdir(f"./data/{pano_id}"))

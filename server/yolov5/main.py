@@ -71,7 +71,7 @@ img = f"{absolutePath}\\data\\{pano_id}\\pano_img.png"
 
 model = torch.hub.load(f"{absolutePath}\\yolov5", "custom", path=f"{absolutePath}\\yolov5\\yolov5x.pt", source="local", force_reload=False, verbose=False)
 
-model.conf = 0.16  # NMS confidence threshold
+model.conf = 0.30  # NMS confidence threshold
 model.iou = 0.15  # NMS IoU threshold
 model.classes = [13]  # (optional list) filter by class, i.e. = [0, 15, 16] for COCO persons, cats and dogs
 
