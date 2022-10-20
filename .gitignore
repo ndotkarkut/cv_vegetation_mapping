@@ -3,6 +3,7 @@ server/data
 client/src/assets/figures
 client/src/assets/svg
 server/comp-vision-project.json
+py-env
 
 __pycache__
 

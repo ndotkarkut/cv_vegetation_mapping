@@ -6,7 +6,7 @@ import axios from "axios";
 import MapMarker from "./components/MapMarker";
 import InfoModal from "./components/InfoModal/InfoModal";
 import PanoCompass from "./components/PanoCompass/PanoCompass";
-import RangeSlider from "./components/RangeSlider";
+import RangeSlider from "./components/RangeSlider/RangeSlider";
 import "./App.css";
 import Modal from "./components/Modal/Modal";
 
@@ -43,7 +43,7 @@ export default function App() {
         heading: resHeading,
       },
     } = await axios.get(
-      `${API_URL}/${pano}?lat=${lat}&lng=${lng}&heading=${heading}&zoom=${zoom}&fontSize=${fontSize}`
+      `${API_URL}/${pano}?lat=${lat}&lng=${lng}&heading=${heading}&zoom=${zoom - 1}&fontSize=${fontSize}`
     );
 
     // console.log(message);
@@ -197,10 +197,10 @@ export default function App() {
           />
           <RangeSlider
             setCurrentValue={(val) => setZoom(val)}
-            initialValue={3}
+            initialValue={1}
             style={{ bottom: 0, left: 0 }}
             min={1}
-            max={5}
+            max={4}
             minTitle="Lower Quality"
             maxTitle="Higher Quality"
             title="Greenery Pano Resolution"
