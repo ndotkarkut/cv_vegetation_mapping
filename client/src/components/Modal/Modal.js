@@ -1,17 +1,21 @@
 import React, { useRef } from "react";
 import "./Modal.css";
 
-const Modal = ({ show, close, children }) => {
+const Modal = ({ show, close, children, allowClose }) => {
   const backdrop = useRef();
 
   return (
     <div
-    onClick={(e) => {
-      e.stopPropagation();
-      if (e.target === backdrop.current) {
-        close();
-      }
-    }}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (
+          e.target === backdrop.current &&
+          (typeof allowClose === "undefined" ||
+            (typeof allowClose === "boolean" && !!allowClose))
+        ) {
+          close();
+        }
+      }}
       ref={backdrop}
       className={show ? "modal__backdrop active" : "modal__backdrop"}
     >

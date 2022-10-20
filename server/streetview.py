@@ -10,6 +10,7 @@ Usage:
     panorama_img = download_panorama_v3(panoid, zoom=2)
 """
 
+from msilib.schema import Error
 import re
 from datetime import datetime
 import requests
@@ -28,6 +29,7 @@ def _panoids_url(lat, lon):
     panoramas (ids) to a give GPS coordinate.
     """
     url = "https://maps.googleapis.com/maps/api/js/GeoPhotoService.SingleImageSearch?pb=!1m5!1sapiv3!5sUS!11m2!1m1!1b0!2m4!1m2!3d{0:}!4d{1:}!2d50!3m10!2m2!1sen!2sGB!9m1!1e2!11m4!1m3!1e2!2b1!3e2!4m10!1e1!1e2!1e3!1e4!1e8!1e6!5m1!1e2!6m1!1e2&callback=_xdc_._v2mub5"
+    print('url', url.format(lat, lon))
     return url.format(lat, lon)
 
 
@@ -48,6 +50,7 @@ def panoids(lat, lon, closest=False, disp=False, proxies=None):
     """
 
     resp = _panoids_data(lat, lon)
+    print(resp.text)
 
     # Get all the panorama ids and coordinates
     # I think the latest panorama should be the first one. And the previous
@@ -157,6 +160,8 @@ def download_tiles(tiles, directory, disp=False):
             except requests.ConnectionError:
                 print("Connection error. Trying again in 2 seconds.")
                 time.sleep(2)
+            except Error: 
+                print('download error', Error)
 
         with open(directory + '/' + fname, 'wb') as out_file:
             shutil.copyfileobj(response.raw, out_file)

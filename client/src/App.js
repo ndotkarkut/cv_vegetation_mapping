@@ -8,6 +8,7 @@ import InfoModal from "./components/InfoModal/InfoModal";
 import PanoCompass from "./components/PanoCompass/PanoCompass";
 import RangeSlider from "./components/RangeSlider";
 import "./App.css";
+import Modal from "./components/Modal/Modal";
 
 export default function App() {
   const [pano, setPano] = useState("");
@@ -21,6 +22,12 @@ export default function App() {
   const [figures, setFigures] = useState(null);
   const [visible, setVisible] = useState(false);
   const [showModal, setShowModal] = useState(false);
+
+  const [showAddApiKeyModal, setShowAddApiKeyModal] = useState(
+    !process.env.REACT_APP_GOOGLE_MAPS_API_KEY
+  );
+  const [apiKey, setApiKey] = useState("");
+  const [submittedApiKey, setSubmittedApiKey] = useState();
 
   const panoRef = useRef();
 
@@ -90,44 +97,53 @@ export default function App() {
     streetview.setVisible(true);
   };
 
-  console.log(pano, heading, visible, lat, lng);
-
   return (
-    <div style={{ maxWidth: "100vw", overflow: "hidden" }}>
-      <Map>
-        <StreetViewPanorama
-          ref={panoRef}
-          onPovChanged={function () {
-            console.log("onPovChanged");
-            getDetails();
-            // getPhotographerHeading();
-          }}
-          onVisibleChanged={function () {
-            console.log("onVisibleChanged");
-            setVisible(!visible);
-            getPhotographerHeading();
-          }}
-          onPositionChanged={function () {
-            console.log("onPositionChanged");
-            getDetails();
-            getPhotographerHeading();
-          }}
-          onPanoChanged={function () {
-            console.log("onPanoChanged");
-            getDetails();
-            getPhotographerHeading();
-          }}
-        />
-        {markers.map((pano, idx) => (
-          <MapMarker
-            iconSvg={pano.svg}
-            key={idx}
-            position={pano.position}
-            panoId={pano.id}
-            onClick={() => showPano(idx)}
+    <div
+      style={{
+        maxWidth: "100vw",
+        overflow: "hidden",
+        backgroundColor: "black",
+      }}
+    >
+      {!!(process.env.REACT_APP_GOOGLE_MAPS_API_KEY || submittedApiKey) && (
+        <Map
+          apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY || submittedApiKey}
+        >
+          <StreetViewPanorama
+            ref={panoRef}
+            onPovChanged={function () {
+              console.log("onPovChanged");
+              getDetails();
+              // getPhotographerHeading();
+            }}
+            onVisibleChanged={function () {
+              console.log("onVisibleChanged");
+              setVisible(!visible);
+              getPhotographerHeading();
+            }}
+            onPositionChanged={function () {
+              console.log("onPositionChanged");
+              getDetails();
+              getPhotographerHeading();
+            }}
+            onPanoChanged={function () {
+              console.log("onPanoChanged");
+              getDetails();
+              getPhotographerHeading();
+            }}
           />
-        ))}
-      </Map>
+          {!visible &&
+            markers.map((pano, idx) => (
+              <MapMarker
+                iconSvg={pano.svg}
+                key={idx}
+                position={pano.position}
+                panoId={pano.id}
+                onClick={() => showPano(idx)}
+              />
+            ))}
+        </Map>
+      )}
       {visible && (
         <div>
           {markers.filter(({ id }) => pano === id).length > 0 && (
@@ -200,6 +216,51 @@ export default function App() {
         objectImage={markers.filter(({ id }) => id == pano)[0]?.processing}
         objectCount={markers.filter(({ id }) => id == pano)[0]?.objectCount}
       />
+      <Modal
+        show={showAddApiKeyModal}
+        close={() => setShowAddApiKeyModal(false)}
+        allowClose={false}
+      >
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "4rem",
+            borderRadius: "1rem",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexDirection: "column",
+            textAlign: "center",
+          }}
+        >
+          <h1>
+            Add Google Maps API Key to use the Vegetation Mapping Web App:{" "}
+          </h1>
+          <p>
+            This software relies on the Google Maps software, accessed through
+            their API. For more info, or to retrieve your API Key,{" "}
+            <a
+              href="https://developers.google.com/maps/documentation/javascript/get-api-key"
+              target="_blank"
+            >
+              click here.
+            </a>
+          </p>
+          <input
+            type="text"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+          />
+          <button
+            onClick={() => {
+              setSubmittedApiKey(apiKey);
+              setShowAddApiKeyModal(false);
+            }}
+          >
+            Submit
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+from io import BytesIO
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -53,8 +54,13 @@ if __name__ == '__main__':
     print(panoids, pano_id)
 
     # panoid = panoids[0]['panoid']
-    panoid = pano_id
-    panorama = streetview.download_panorama_v3(panoid, zoom=zoom, disp=True)
+    # panorama = streetview.download_panorama_v3(pano_id, zoom=zoom, disp=True)
+    # print('panorama', panorama)
+
+    # new logic
+    pano_req = requests.get(f"https://streetviewpixels-pa.googleapis.com/v1/tile?cb_client=apiv3&panoid={pano_id}&output=tile&x=0&y=0&zoom=0&nbt=1&fover=2", stream=True)
+    requested_img = Image.open(BytesIO(pano_req.content))
+    panorama = np.array(requested_img)
     pano_img = Image.fromarray(panorama)
 
     #print(not os.path.isdir(f"./data/{pano_id}"))
