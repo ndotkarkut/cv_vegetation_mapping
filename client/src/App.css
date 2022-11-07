@@ -15,5 +15,24 @@
 }
 
 .save-marker-popup:hover {
-    background-color: #4babff;
+  background-color: #4babff;
+}
+
+.loading_indicator {
+  height: 100vh;
+  position: absolute;
+  width: 100vw;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  isolation: isolate;
+  background-color: rgba(0, 0, 0, 0.411);
+}
+
+.loading__img {
+  height: 100px;
+  width: 100px;
 }
