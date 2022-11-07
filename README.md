@@ -8,7 +8,7 @@ React Vegetation Mapper is a React-frontend and Node.js / Python-backend web app
 
 This software relies on the Google Maps Javascript and Google Maps Streetview APIs to retrieve Google Maps and its data. Therefore it is a requirement for the user to provide a Google Maps API Key upon startup of the application.
 
-The application will either (1) ask for you to input this API Key that you can retrieve following this [Google documentation](https://developers.google.com/maps/documentation/javascript/get-api-key) 
+The application will either (1) ask for you to input this API Key on the startup screen that you can retrieve following this [Google documentation](https://developers.google.com/maps/documentation/javascript/get-api-key) 
 
 
 or (2) enter the API Key as an environment variable in a `.env` file as so:
