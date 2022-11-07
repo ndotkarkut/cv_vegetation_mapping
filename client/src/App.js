@@ -9,6 +9,7 @@ import PanoCompass from "./components/PanoCompass/PanoCompass";
 import RangeSlider from "./components/RangeSlider/RangeSlider";
 import "./App.css";
 import Modal from "./components/Modal/Modal";
+import loader from "./assets/loader.gif";
 
 export default function App() {
   const [pano, setPano] = useState("");
@@ -22,6 +23,7 @@ export default function App() {
   const [figures, setFigures] = useState(null);
   const [visible, setVisible] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [showAddApiKeyModal, setShowAddApiKeyModal] = useState(
     !process.env.REACT_APP_GOOGLE_MAPS_API_KEY
@@ -32,6 +34,7 @@ export default function App() {
   const panoRef = useRef();
 
   const onClickHandler = async () => {
+    setIsLoading(true);
     const {
       data: {
         message,
@@ -43,7 +46,9 @@ export default function App() {
         heading: resHeading,
       },
     } = await axios.get(
-      `${API_URL}/${pano}?lat=${lat}&lng=${lng}&heading=${heading}&zoom=${zoom - 1}&fontSize=${fontSize}`
+      `${API_URL}/${pano}?lat=${lat}&lng=${lng}&heading=${heading}&zoom=${
+        zoom - 1
+      }&fontSize=${fontSize}`
     );
 
     // console.log(message);
@@ -69,6 +74,7 @@ export default function App() {
 
     setMarkers((curMarkers) => [...curMarkers, markerToAdd]);
     setFigures(figures);
+    setIsLoading(false);
   };
 
   const getDetails = () => {
@@ -261,6 +267,11 @@ export default function App() {
           </button>
         </div>
       </Modal>
+      {isLoading && (
+        <div className="loading_indicator">
+          <img src={loader} className="loading__img" />
+        </div>
+      )}
     </div>
   );
 }
